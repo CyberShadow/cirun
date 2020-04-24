@@ -13,12 +13,16 @@
 
 module cirun.ci.job;
 
+import std.algorithm.comparison;
 import std.algorithm.searching;
 import std.conv;
 import std.datetime.systime;
+import std.exception;
 import std.file;
+import std.path;
 import std.process;
 import std.stdio;
+import std.string;
 
 import ae.sys.file;
 import ae.utils.path;
@@ -29,6 +33,8 @@ import cirun.common.ids;
 import cirun.common.paths;
 import cirun.common.state;
 import cirun.util.persistence;
+
+enum runnerStartLine = "ci-run runner OK";
 
 struct JobResult
 {
@@ -104,40 +110,61 @@ private JobResult queueJob(ref JobSpec spec)
 /// Start a runner for this job now.
 private JobResult startJob(string jobID)
 {
-	auto jobState = getJobState(jobID);
-	jobState.value.status = JobStatus.starting;
-	jobState.value.startTime = Clock.currTime.stdTime;
+	auto lockPath = getJobDir(Root.work, jobID).buildPath("start.lock");
+	ensurePathExists(lockPath);
+	auto startLock = File(lockPath, "ab");
+	startLock.lock();
+
+	JobResult result;
+	result.jobID = jobID;
+
+	getJobState(jobID).edit((ref value) {
+		value.status = JobStatus.starting;
+		value.startTime = Clock.currTime.stdTime;
+		result.state = value;
+	});
 
 	try
 	{
-		// Note: we keep holding the jobState lock as the process is
-		// started until this function exits.
+		auto p = pipe();
 		auto nullFile = File(nullFileName, "r+");
 		spawnProcess([thisExePath, "job-runner", jobID],
-			nullFile, nullFile, nullFile,
+			nullFile, p.writeEnd, nullFile,
 			null,
 			std.process.Config.detached,
 		);
+		enforce(p.readEnd.readln().chomp() == runnerStartLine, "Unexpected line from runner process");
 	}
 	catch (Exception e)
 	{
-		jobState.value.status = JobStatus.errored;
-		jobState.value.statusText = e.msg;
-		jobState.value.finishTime = Clock.currTime.stdTime;
+		getJobState(jobID).edit((ref value) {
+			value.status = JobStatus.errored;
+			value.statusText = e.msg;
+			value.finishTime = Clock.currTime.stdTime;
+			result.state = value;
+		});
 	}
 
-	// TODO: still-running lock
-	// (readln from process to know it's running; fail if readln fails)
-	// Is it needed? What about the runner's "pick something from the queue" logic, there's no room for that there
-
-	return JobResult(jobID, jobState.value);
+	return result;
 }
 
 JobResult getJobResult(string jobID)
 {
 	auto jobState = getJobState(jobID);
 
-	// TODO: cleanup if terminated improperly
+	if (jobState.value.status.among(JobStatus.starting, JobStatus.running))
+	{
+		auto startLock = File(getJobDir(Root.work, jobID).buildPath("start.lock"), "ab");
+		if (startLock.tryLock())
+		{
+			auto runLock = File(getJobDir(Root.work, jobID).buildPath("run.lock"), "ab");
+			if (runLock.tryLock())
+			{
+				jobState.value.status = JobStatus.errored;
+				jobState.value.statusText = "job runner process did not exit gracefully";
+			}
+		}
+	}
 
 	return JobResult(jobID, jobState.value);
 }

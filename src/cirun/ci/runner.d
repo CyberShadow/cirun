@@ -32,13 +32,19 @@ import ae.utils.json;
 import ae.utils.path;
 import ae.utils.time;
 
-import cirun.ci.job : updateJobs;
+import cirun.ci.job : updateJobs, runnerStartLine;
 import cirun.common.config;
 import cirun.common.paths;
 import cirun.common.state;
 
 void runJob(string jobID)
 {
+	auto runLock = File(getJobDir(Root.work, jobID).buildPath("run.lock"), "ab");
+	runLock.lock();
+
+	stdout.writeln(runnerStartLine);
+	stdout.flush();
+
 	JobSpec spec;
 
 	getJobState(jobID).edit((ref jobState) {
