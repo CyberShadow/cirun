@@ -1,0 +1,9 @@
+name "cirun"
+description "Minimal-setup CI runner"
+authors "Vladimir Panteleev <vladimir@thecybershadow.net>"
+homepage "https://github.com/CyberShadow/cirun"
+license "MPL-2.0"
+targetType "executable"
+stringImportPaths "src"
+
+dependency "ae" version="==0.0.2515"

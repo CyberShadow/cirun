@@ -1,0 +1,142 @@
+# cirun configuration file.
+# Lines starting with ; or # are ignored.
+
+# cirun will load configuration from "cirun.conf",
+# or all *.conf files from "cirun.conf.d", if it exists.
+
+
+##############################################################################
+# Global options
+
+# The directory for persistent storage, where test results and files
+# will be saved. The default is "./cirun-data/".
+; dataDir = /home/cirun/data
+
+# The directory for working files, where cloned repositories will be
+# stored. The contents of this directory need not remain available
+# across reboots and benefits from being on a fast filesystem (tmpfs
+# or SSD).
+# If unset (the default), a new directory will be created under the
+# system's directory for temporary files (e.g. /tmp).
+# Can be the same path as dataDir.
+; workDir = /home/cirun/work
+
+# Specifies the external URL prefix.
+# This will be used to generate URLs to cirun, e.g. for status pages.
+# If unset (the default), the URL prefix will be inferred from incoming
+# HTTP requests or server settings (when possible).
+; externalUrlPrefix = https://dev.initech.com/cirun/
+
+# Specifies the maximum number of jobs to run in parallel.
+# Any job requests exceeding this limit are queued.
+# If unset (the default), the number of parallel jobs is unlimited
+# (thus job requests always immediately start a job).
+; maxParallelJobs = 10
+
+
+##############################################################################
+# HTTP server options
+
+# cirun uses a HTTP server to receive webhooks, and allow viewing
+# execution status and logs.  cirun can also be used without a HTTP
+# server (the default), with these features being unavailable.
+
+# You can specify any (unique) string instead of "main".
+; [server.main]
+
+# The IP address to bind to.
+# The default is to bind to all interfaces.
+; listen.addr = 127.0.0.1
+
+# The TCP port to listen on.
+# By default, a random free port will be chosen on each execution.
+; listen.port = 8000
+
+# If specified, cirun will listen on a UNIX socket instead of TCP.
+# Specifies the path to the UNIX socket to create.
+# The default is unset (listen on TCP).
+; listen.socketPath = cirun.sock
+
+# If specified, use HTTP with TLS (HTTPS).
+# Specifies the paths to the server certificate and private key, in
+# PEM format.
+# cirun must be built with SSL support (disabled by default, to avoid
+# the OpenSSL dependency).
+; ssl.cert = server.crt
+; ssl.key = server.key
+
+# Specifies a path prefix.
+# If specified, all HTTP requests must begin with the given prefix;
+# otherwise, the request is rejected.
+# The default is / (no prefix).
+; prefix = /cirun/
+
+# If specified, require a username/password (using HTTP "Basic"
+# authentication) and forbid access unless it matches the configured
+# one.
+; username = initech
+; password = hunter2
+
+# Multiple server sections may be specified;
+# for example, you may configure one external server for HTML pages,
+# and one internal server for receiving webhooks.
+; [server.internal]
+; ...
+
+
+##############################################################################
+# Repository options
+
+# Multiple sections may be specified to apply settings to some number
+# of repositories. Because settings are applied in the order they are
+# specified, if more than one section matches a repository, settings
+# in posterior sections override settings in anterior sections.
+
+# A match-all "*" wildcard as the first section name can thus be used
+# to specify default settings for all repositories.
+; [repository.*]
+
+# File name of the CI script to run.
+# By default, cirun looks for "cirun", ".cirun", "cirun.*", and
+# ".cirun.*" (exactly one must exist).
+; script = cirun
+
+# A prefix can be specified to be added when running the test script.
+# This can be used to specify an interpreter, define an environment,
+# or enforce restrictions / isolation on the CI command.
+
+# Example - run the CI script with a clean, minimal environment:
+; execPrefix = ["env", "-i", "PATH=/usr/bin:/bin"]
+
+# Example - run the CI script with a 10 minute timeout:
+; execPrefix = ["timeout", "600"]
+
+# Example - specify an interpreter (for systems which do not support
+# shebang lines):
+; execPrefix = ["C:\\Program Files\\Python38\\bin\\python.exe"]
+
+# If you wish to use shell features, such as multiple commands,
+# environment variables, or redirection, create a shell script and
+# specify its path here.
+#
+# Example - throw away stdout, recording only stderr:
+#   exec "$@" > /dev/null
+#
+# Example - run the CI script with everything except the current
+# directory read-only:
+#   exec bwrap --ro-bind / / --dev /dev --proc /proc --bind "$PWD" "$PWD" ./cirun
+#
+# Example - run the CI script in a Docker image:
+#   exec docker run --rm -v "$PWD":/transmogrifier --workdir /transmogrifier initech/your-docker-image ./cirun
+#
+; execPrefix = ["/path/to/my/wrapper/script.sh"]
+
+# Wildcards can be used to apply settings to a number of repositories
+# at once.
+; [repository.initech/*]
+; ...
+
+# Repository-specific settings can be defined by adding a section for
+# that repository.
+; [repository.initech/transmogrifier]
+; ...
