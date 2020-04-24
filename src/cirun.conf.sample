@@ -131,6 +131,11 @@
 # Example - throw away stdout, recording only stderr:
 #   exec "$@" > /dev/null
 #
+# Example - limit virtual memory to 4GB:
+#   ulimit -Sv $((4*1024*1024))
+#   ulimit -Hv $((4*1024*1024))
+#   exec "$@"
+#
 # Example - run the CI script with everything except the current
 # directory read-only:
 #   exec bwrap --ro-bind / / --dev /dev --proc /proc --bind "$PWD" "$PWD" ./cirun
