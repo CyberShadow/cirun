@@ -138,10 +138,10 @@
 #
 # Example - run the CI script with everything except the current
 # directory read-only:
-#   exec bwrap --ro-bind / / --dev /dev --proc /proc --bind "$PWD" "$PWD" ./cirun
+#   exec bwrap --ro-bind / / --dev /dev --proc /proc --bind "$PWD" "$PWD" "$@"
 #
 # Example - run the CI script in a Docker image:
-#   exec docker run --rm -v "$PWD":/transmogrifier --workdir /transmogrifier initech/your-docker-image ./cirun
+#   exec docker run --rm -v "$PWD":/transmogrifier --workdir /transmogrifier initech/your-docker-image "$@"
 #
 ; execPrefix = ["/path/to/my/wrapper/script.sh"]
 
