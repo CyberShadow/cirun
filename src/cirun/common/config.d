@@ -19,6 +19,7 @@ import std.algorithm.iteration;
 import std.array;
 import std.exception;
 import std.file;
+import std.parallelism : totalCPUs;
 import std.path : globMatch;
 
 static import std.getopt;
@@ -121,6 +122,14 @@ shared static this()
 	.config = cast(immutable)config;
 
 	.opts = cast(immutable)opts;
+}
+
+uint maxParallelJobs()
+{
+	if (config.maxParallelJobs == uint.max)
+		return totalCPUs;
+	else
+		return config.maxParallelJobs;
 }
 
 RepositoryConfig getRepositoryConfig(string name)

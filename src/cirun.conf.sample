@@ -29,8 +29,7 @@
 
 # Specifies the maximum number of jobs to run in parallel.
 # Any job requests exceeding this limit are queued.
-# If unset (the default), the number of parallel jobs is unlimited
-# (thus job requests always immediately start a job).
+# The default is the number of logical CPUs on the current system.
 ; maxParallelJobs = 10
 
 

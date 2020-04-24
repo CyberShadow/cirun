@@ -189,7 +189,7 @@ JobResult[] updateJobs(Persistent!GlobalState globalState)
 	}
 
 	foreach (ref result; results)
-		if (result.state.status == JobStatus.queued && numRunningJobs < config.maxParallelJobs)
+		if (result.state.status == JobStatus.queued && numRunningJobs < maxParallelJobs)
 		{
 			result = startJob(result.jobID);
 			if (!result.state.status.isFinished)
