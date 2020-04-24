@@ -31,6 +31,8 @@ import ae.utils.sini;
 
 struct RepositoryConfig
 {
+	string[] cloneCommand = ["git", "clone"];
+	string[] checkoutCommand = ["git", "checkout", "-qf"];
 	string script;
 	string[] execPrefix;
 }

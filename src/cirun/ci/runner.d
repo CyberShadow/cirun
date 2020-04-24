@@ -130,9 +130,9 @@ void runJob(string jobID)
 
 		mkdirRecurse(repoDir);
 
-		runProgram("Clone", ["git", "clone", spec.cloneURL, "."]);
+		runProgram("Clone", repoConfig.cloneCommand ~ [spec.cloneURL, "."]);
 
-		runProgram("Check-out", ["git", "checkout", spec.commit]);
+		runProgram("Check-out", repoConfig.checkoutCommand ~ [spec.commit]);
 
 		auto command = getCmdLine(repoConfig, repoDir);
 

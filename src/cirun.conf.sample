@@ -95,6 +95,16 @@
 # to specify default settings for all repositories.
 ; [repository.*]
 
+# Command used to clone the repository.
+# Invoked with the clone URL and "." as arguments.
+# Default: ["git", "clone"]
+; cloneCommand = ["git", "clone", "--depth=50"]
+
+# Command used to checkout the tested commit.
+# Invoked with the commit SHA1 as argument.
+# Default: ["git", "checkout", "-qf"]
+; checkoutCommand = ["/path/to/my-sparse-checkout-script"]
+
 # File name of the CI script to run.
 # By default, cirun looks for "cirun", ".cirun", "cirun.*", and
 # ".cirun.*" (exactly one must exist).
