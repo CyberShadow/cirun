@@ -21,6 +21,7 @@ import std.stdio;
 import std.string;
 import std.typecons;
 
+import ae.sys.datamm;
 import ae.sys.file;
 import ae.utils.json;
 
@@ -37,6 +38,9 @@ struct PersistentImpl(T) /// ditto
 
 	this(string fileName)
 	{
+		this.fileName = fileName;
+
+		auto lockFileName = fileName ~ ".lock";
 		// Create the file only if it doesn't exist.
 		// Do so in a way which avoids a race condition, due to the
 		// file being created by another cirun instance
@@ -46,26 +50,27 @@ struct PersistentImpl(T) /// ditto
 		while (true)
 		{
 			// time of check
-			if (fileName.exists)
-				f = openFile(fileName, "r+b");
+			if (lockFileName.exists)
+				lockFile = openFile(lockFileName, "r+b");
 			else
 			{
-				ensurePathExists(fileName);
+				ensurePathExists(lockFileName);
 				if (!collectFileExistsError({
 					// time of use - use 'x' to fail if the file has
 					// been created since time of check
-					f = openFile(fileName, "w+bx");
+					lockFile = openFile(lockFileName, "w+bx");
 				}))
 					continue; // retry
 			}
 			break;
 		}
 
-		f.lock();
+		lockFile.lock();
 
-		if (f.size)
+		if (fileName.exists && fileName.getSize > 0)
 		{
-			auto json = cast(string)readFile(f);
+			auto data = mapFile(fileName, MmMode.read);
+			auto json = cast(string)data.contents;
 			value = json.jsonParse!T;
 		}
 		origValue = value;
@@ -86,23 +91,22 @@ struct PersistentImpl(T) /// ditto
 	}
 
 private:
-	File f;
+	string fileName;
+	File lockFile;
 
 	T origValue;
 
+	void saveTo(string target)
+	{
+		auto f = File(target, "wb");
+		CustomJsonSerializer!(PrettyJsonWriter!FileWriter) serializer;
+		serializer.writer.output = FileWriter(f);
+		serializer.put(value);
+	}
+
 	void save()
 	{
-		f.seek(0);
-
-		{
-			CustomJsonSerializer!(PrettyJsonWriter!FileWriter) serializer;
-			serializer.writer.output = FileWriter(f);
-			serializer.put(value);
-		}
-
-		// truncate flushes implicitly
-		f.truncate(f.tell);
-
+		atomicDg(&saveTo, fileName);
 		origValue = value;
 	}
 }
