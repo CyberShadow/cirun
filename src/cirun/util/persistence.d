@@ -40,31 +40,7 @@ struct PersistentImpl(T) /// ditto
 	{
 		this.fileName = fileName;
 
-		auto lockFileName = fileName ~ ".lock";
-		// Create the file only if it doesn't exist.
-		// Do so in a way which avoids a race condition, due to the
-		// file being created by another cirun instance
-		// simultaneously.
-		// As we are using C I/O, and C doesn't have a direct way to
-		// accomplish this, use a loop to avoid a TOCTOU condition.
-		while (true)
-		{
-			// time of check
-			if (lockFileName.exists)
-				lockFile = openFile(lockFileName, "r+b");
-			else
-			{
-				ensurePathExists(lockFileName);
-				if (!collectFileExistsError({
-					// time of use - use 'x' to fail if the file has
-					// been created since time of check
-					lockFile = openFile(lockFileName, "w+bx");
-				}))
-					continue; // retry
-			}
-			break;
-		}
-
+		lockFile.open(fileName ~ ".lock", "ab");
 		lockFile.lock();
 
 		if (fileName.exists && fileName.getSize > 0)
