@@ -42,10 +42,12 @@ static:
 		startServers();
 	}
 
-	@(`Show information about the last job (starting one if none) for the given repository commit.`)
+	@(`Request and show a job for the given repository commit.
+
+If a job for the given commit already exists, show information about that job instead of starting a new one.`)
 	void run(
 		string repository,
-		string cloneURL,
+		string cloneURL, // TODO: figure out if this should be a parameter or option
 		string commit,
 		Switch!"Wait until this job has finished." wait = false,
 		Switch!"Do not print the job status." quiet = false,
@@ -63,7 +65,9 @@ static:
 			File(jobIDFile, "wb").writeln(result.jobID);
 	}
 
-	@(`Show status. If an ID is specified, show the status of a matching job.`)
+	@(`Show status.
+
+If an ID is specified, show the status of a matching job.`)
 	void status(
 		Parameter!(string, "A job ID, commit hash, or repository name.") id = null
 	)
@@ -78,7 +82,9 @@ static:
 			printGlobalStatus();
 	}
 
-	@(`Show log. If an ID is specified, show the log of a matching job.`)
+	@(`Show log.
+
+If an ID is specified, show the log of a matching job.`)
 	void log(
 		Parameter!(string, "A job ID, commit hash, or repository name.") id = null
 	)
@@ -137,7 +143,7 @@ void cliEntryPoint()
 
 		auto lines = usage.splitLines();
 
-		stderr.writeln("cirun - the minimal CI runner");
+		stderr.writeln("cirun - the stand-alone CI runner");
 		stderr.writeln("Created by Vladimir Panteleev");
 		stderr.writeln("https://github.com/CyberShadow/cirun");
 		stderr.writeln();

@@ -73,7 +73,7 @@ immutable Config config;
 struct Opts
 {
 	Option!(string, "Path to the configuration file to use", "PATH", 'f') configFile;
-	Option!(string[], "Additional configuration. Equivalent to cirun.conf settings.", "NAME=VALUE", 'c', "config") configLines;
+	Option!(string[], "Additional configuration.\nEquivalent to cirun.conf settings.", "NAME=VALUE", 'c', "config") configLines;
 
 	Parameter!(string, "Action to perform (see list below)") action;
 	Parameter!(immutable(string)[]) actionArguments;
