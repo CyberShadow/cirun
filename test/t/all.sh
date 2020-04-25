@@ -5,6 +5,8 @@ set -eu
 
 cd "$(dirname "$0")"
 
+source lib.bash
+
 for t in ./t-*.sh
 do
 	printf 'Running test %s:\n' "$t" 1>&2
