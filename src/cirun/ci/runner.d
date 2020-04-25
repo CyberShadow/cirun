@@ -23,7 +23,6 @@ import std.datetime.systime;
 import std.exception;
 import std.file;
 import std.format;
-import std.path;
 import std.process;
 import std.stdio;
 
@@ -39,7 +38,7 @@ import cirun.common.state;
 
 void runJob(string jobID)
 {
-	auto runLock = File(getJobDir(Root.work, jobID).buildPath("run.lock"), "ab");
+	auto runLock = File(getJobRunLockPath(jobID), "ab");
 	runLock.lock();
 
 	stdout.writeln(runnerStartLine);
@@ -73,7 +72,7 @@ void runJob(string jobID)
 			logFile.put(e);
 		}
 
-		auto repoDir = getJobDir(Root.work, jobID).buildPath("r", spec.repo.baseName);
+		auto repoDir = getJobRepoDir(jobID, spec.repo);
 
 		void runProgram(string what, string[] commandLine)
 		{
@@ -151,6 +150,8 @@ void runJob(string jobID)
 
 string[] getCmdLine(in ref RepositoryConfig repoConfig, string repoDir)
 {
+	import std.path : baseName, buildPath;
+
 	string script;
 	if (repoConfig.script)
 		script = repoConfig.script;

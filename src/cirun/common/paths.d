@@ -13,7 +13,7 @@
 
 module cirun.common.paths;
 
-import std.array : replace;
+import std.array : replace, split;
 import std.exception : enforce;
 import std.file : tempDir;
 import std.path : buildPath, dirSeparator;
@@ -47,6 +47,16 @@ string getRoot(Root root)
 	}
 }
 
+string getGlobalStatePath()
+{
+	return getRoot(Root.data).buildPath("global.json");
+}
+
+string getGlobalHistoryPath()
+{
+	return getRoot(Root.data).buildPath("history.json");
+}
+
 string getRepoDir(Root root, string repo)
 {
 	enforce(repo.isRepoID(), "Invalid repository name");
@@ -59,8 +69,38 @@ string getCommitDir(Root root, string repo, string commit)
 	return getRepoDir(root, repo).buildPath(commit[0..2], commit[4..$]);
 }
 
+string getCommitStatePath(string repo, string commit)
+{
+	return getCommitDir(Root.data, repo, commit).buildPath("commit.json");
+}
+
 string getJobDir(Root root, string jobID)
 {
 	enforce(jobID.isJobID(), "Invalid job ID");
 	return getRoot(root).buildPath("jobs", jobID[0..8], jobID[8..$]);
+}
+
+string getJobStatePath(string jobID)
+{
+	return getJobDir(Root.data, jobID).buildPath("job.json");
+}
+
+string getJobLogPath(string jobID)
+{
+	return getJobDir(Root.data, jobID).buildPath("log.json");
+}
+
+string getJobStartLockPath(string jobID)
+{
+	return getJobDir(Root.work, jobID).buildPath("start.lock");
+}
+
+string getJobRunLockPath(string jobID)
+{
+	return getJobDir(Root.work, jobID).buildPath("run.lock");
+}
+
+string getJobRepoDir(string jobID, string repo)
+{
+	return getJobDir(Root.work, jobID).buildPath("r", repo.split("/")[$-1]);
 }

@@ -13,7 +13,6 @@
 
 module cirun.common.state;
 
-import std.path;
 import std.typecons : Nullable;
 
 import ae.sys.file;
@@ -45,22 +44,12 @@ struct GlobalState /// Persistent global state
 	Job[] jobs; /// Active jobs (with status queued/starting/running)
 }
 
-auto getGlobalState() /// ditto
-{
-	return Persistent!GlobalState(getRoot(Root.data).buildPath("global.json"));
-}
+auto getGlobalState() { return Persistent!GlobalState(getGlobalStatePath()); } /// ditto
 
 alias GlobalHistoryEntry = Job; /// Global history entry (append-only)
 
-auto getGlobalHistoryWriter() /// ditto
-{
-	return LogWriter!GlobalHistoryEntry(getRoot(Root.data).buildPath("history.json"));
-}
-
-auto getGlobalHistoryReader() /// ditto
-{
-	return LogReader!GlobalHistoryEntry(getRoot(Root.data).buildPath("history.json"));
-}
+auto getGlobalHistoryWriter() { return LogWriter!GlobalHistoryEntry(getGlobalHistoryPath()); } /// ditto
+auto getGlobalHistoryReader() { return LogReader!GlobalHistoryEntry(getGlobalHistoryPath()); } /// ditto
 
 // Commit
 
@@ -69,12 +58,7 @@ struct CommitState /// Persistent per-commit state
 	string lastJobID;
 }
 
-auto getCommitState(string repo, string commit) /// ditto
-{
-	auto path = getCommitDir(Root.data, repo, commit).buildPath("commit.json");
-	ensurePathExists(path);
-	return Persistent!CommitState(path);
-}
+auto getCommitState(string repo, string commit) { return Persistent!CommitState(getCommitStatePath(repo, commit)); } /// ditto
 
 // Job
 
@@ -105,7 +89,7 @@ struct JobState /// Persistent per-job state
 
 auto getJobState(string jobID) /// ditto
 {
-	return Persistent!JobState(getJobDir(Root.data, jobID).buildPath("job.json"));
+	return Persistent!JobState(getJobStatePath(jobID));
 }
 
 struct JobLogEntry /// Job log entry (append-only)
@@ -140,10 +124,10 @@ struct JobLogEntry /// Job log entry (append-only)
 
 auto getJobLogWriter(string jobID) /// ditto
 {
-	return LogWriter!JobLogEntry(getJobDir(Root.data, jobID).buildPath("log.json"));
+	return LogWriter!JobLogEntry(getJobLogPath(jobID));
 }
 
 auto getJobLogReader(string jobID) /// ditto
 {
-	return LogReader!JobLogEntry(getJobDir(Root.data, jobID).buildPath("log.json"));
+	return LogReader!JobLogEntry(getJobLogPath(jobID));
 }

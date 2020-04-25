@@ -19,7 +19,6 @@ import std.conv;
 import std.datetime.systime;
 import std.exception;
 import std.file;
-import std.path;
 import std.process;
 import std.stdio;
 import std.string;
@@ -47,6 +46,7 @@ struct JobResult
 /// retestID, start a new job.
 JobResult needJob(ref JobSpec spec, string retestID)
 {
+	getCommitStatePath(spec.repo, spec.commit).ensurePathExists();
 	{
 		auto commitState = getCommitState(spec.repo, spec.commit);
 		if (commitState.value.lastJobID && (retestID is null || retestID != commitState.value.lastJobID))
@@ -110,7 +110,7 @@ private JobResult queueJob(ref JobSpec spec)
 /// Start a runner for this job now.
 private JobResult startJob(string jobID)
 {
-	auto lockPath = getJobDir(Root.work, jobID).buildPath("start.lock");
+	auto lockPath = getJobStartLockPath(jobID);
 	ensurePathExists(lockPath);
 	auto startLock = File(lockPath, "ab");
 	startLock.lock();
@@ -154,10 +154,10 @@ JobResult getJobResult(string jobID)
 
 	if (jobState.value.status.among(JobStatus.starting, JobStatus.running))
 	{
-		auto startLock = File(getJobDir(Root.work, jobID).buildPath("start.lock"), "ab");
+		auto startLock = File(getJobStartLockPath(jobID), "ab");
 		if (startLock.tryLock())
 		{
-			auto runLock = File(getJobDir(Root.work, jobID).buildPath("run.lock"), "ab");
+			auto runLock = File(getJobRunLockPath(jobID), "ab");
 			if (runLock.tryLock())
 			{
 				jobState.value.status = JobStatus.errored;

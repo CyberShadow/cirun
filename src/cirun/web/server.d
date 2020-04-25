@@ -16,7 +16,6 @@ module cirun.web.server;
 import std.algorithm.searching;
 import std.exception;
 import std.file;
-import std.path;
 import std.socket;
 
 import ae.net.asockets;
@@ -86,6 +85,7 @@ void startServer(string name, immutable Config.Server serverConfig)
 			socketPath = serverConfig.listen.socketPath;
 			// Work around "path too long" errors with long $PWD
 			{
+				import std.path : relativePath;
 				auto relPath = relativePath(socketPath);
 				if (relPath.length < socketPath.length)
 					socketPath = relPath;

@@ -17,7 +17,6 @@ import std.algorithm.searching;
 import std.conv;
 import std.exception;
 import std.file : thisExePath, exists;
-import std.path;
 import std.stdio;
 import std.string;
 
@@ -124,6 +123,8 @@ void cliEntryPoint()
 {
 	static void usageFun(string usage)
 	{
+		import std.path : absolutePath, buildNormalizedPath;
+
 		auto lines = usage.splitLines();
 
 		stderr.writeln("cirun - the minimal CI runner");
