@@ -11,7 +11,7 @@
  *   Vladimir Panteleev <vladimir@thecybershadow.net>
  */
 
-module cirun.webhook;
+module cirun.web.webhook;
 
 void processWebhook(string jsonStr)
 {
