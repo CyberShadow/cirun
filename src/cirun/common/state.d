@@ -65,6 +65,7 @@ auto getCommitState(string repo, string commit) { return Persistent!CommitState(
 enum JobStatus
 {
 	none,      /// Indicates absence of information (job state file not found)
+	corrupted, /// Indicates unreadable information (job state file corrupted)
 	queued,    /// In queue (due to maxParallelJobs). Never actually occurs in job.json.
 	starting,  /// The runner process is starting (very short-lived)
 	running,   /// Running right now

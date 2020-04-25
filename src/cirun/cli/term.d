@@ -109,6 +109,7 @@ Term.Color jobStatusColor(JobStatus status)
 			return Term.Color.brightGreen;
 		case JobStatus.failure:
 		case JobStatus.errored:
+		case JobStatus.corrupted:
 			return Term.Color.brightRed;
 		case JobStatus.cancelled:
 		case JobStatus.none:
