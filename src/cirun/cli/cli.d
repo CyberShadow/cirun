@@ -48,6 +48,7 @@ static:
 		string cloneURL,
 		string commit,
 		Switch!"Wait until this job has finished." wait = false,
+		Switch!"Do not print the job status." quiet = false,
 	)
 	{
 		JobSpec spec;
@@ -55,7 +56,8 @@ static:
 		spec.cloneURL = cloneURL;
 		spec.commit = commit;
 		auto result = needJob(spec, null, wait);
-		printJobResult(result);
+		if (!quiet)
+			printJobResult(result);
 	}
 
 	@(`Show status. If an ID is specified, show the status of a matching job.`)
