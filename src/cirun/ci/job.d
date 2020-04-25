@@ -158,7 +158,9 @@ private JobResult startJob(string jobID)
 
 JobResult getJobResult(string jobID)
 {
-	auto jobState = getJobState(jobID);
+	Persistent!JobState jobState;
+	if (!{ jobState = getJobState(jobID); }.collectNotFoundError)
+		return JobResult(jobID);
 
 	if (jobState.value.status.among(JobStatus.starting, JobStatus.running))
 	{
