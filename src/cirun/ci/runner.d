@@ -26,7 +26,7 @@ import std.format;
 import std.process;
 import std.stdio;
 
-import ae.sys.file : readPartial;
+import ae.sys.file : readPartial, pushd;
 import ae.utils.json;
 import ae.utils.path;
 import ae.utils.time;
@@ -85,9 +85,20 @@ void runJob(string jobID)
 			auto stdout = pipe();
 			auto stderr = pipe();
 
-			auto pid = spawnProcess(commandLine,
-				stdin, stdout.writeEnd, stderr.writeEnd,
-				null, std.process.Config.none, repoDir);
+			Pid pid;
+			static if (__VERSION__ > 2_091)
+			{
+				pid = spawnProcess(commandLine,
+					stdin, stdout.writeEnd, stderr.writeEnd,
+					null, std.process.Config.none, repoDir);
+			}
+			else
+			{
+				// Work around https://issues.dlang.org/show_bug.cgi?id=20765
+				auto _ = pushd(repoDir);
+				pid = spawnProcess(commandLine,
+					stdin, stdout.writeEnd, stderr.writeEnd);
+			}
 
 			void monitor(File f, JobLogEntry.Data.Stream stream)
 			{
