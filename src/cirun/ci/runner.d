@@ -27,6 +27,7 @@ import std.process;
 import std.stdio;
 
 import ae.sys.file : readPartial, pushd;
+import ae.utils.exception;
 import ae.utils.json;
 import ae.utils.path;
 import ae.utils.time;
@@ -130,7 +131,7 @@ void runJob(string jobID)
 				log(e);
 			}
 
-			enforce(exitCode == 0,
+			enforce!ExitCodeException(exitCode == 0,
 				format("%s failed with status %d", what, exitCode));
 		}
 
@@ -149,7 +150,7 @@ void runJob(string jobID)
 			runProgram("CI script", command);
 			finishJob(JobStatus.success);
 		}
-		catch (Exception e)
+		catch (ExitCodeException e)
 			finishJob(JobStatus.failure, e.msg);
 	}
 	catch (Exception e)
@@ -158,6 +159,8 @@ void runJob(string jobID)
 	// Immediately start a new queued job
 	getGlobalState().updateJobs();
 }
+
+private:
 
 string[] getCmdLine(in ref RepositoryConfig repoConfig, string repoDir)
 {
@@ -179,3 +182,5 @@ string[] getCmdLine(in ref RepositoryConfig repoConfig, string repoDir)
 		script = buildPath(".", script);
 	return [] ~ repoConfig.execPrefix ~ script;
 }
+
+mixin DeclareException!q{ExitCodeException};
