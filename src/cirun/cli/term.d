@@ -68,7 +68,7 @@ auto formatted(string fmt, T...)(auto ref T values)
 	return Formatted(values);
 }
 
-enum maxStatusLength = [EnumMembers!(JobStatus)].map!(status => status.text.length).reduce!max;
+enum maxStatusLength = [EnumMembers!(JobStatus)].map!(status => jobStatusText(status).length).reduce!max;
 
 void printJobSummary(JobResult result)
 {
@@ -76,16 +76,25 @@ void printJobSummary(JobResult result)
 	t.put(
 		t.fg(jobStatusColor(result.state.status)),
 	//	"• ",
-		formatted!"%*s"(maxStatusLength, result.state.status.text),
+		formatted!"%*s"(maxStatusLength, jobStatusText(result.state.status)),
 		t.none,
-		" ",
-		result.jobID,
-		" (",
-		formatted!"%-20s"(result.state.spec.repo),
-		" @ ",
-		result.state.spec.commit,
-		")\n",
 	);
+	if (result.jobID)
+	{
+		t.put(
+			" ",
+			result.jobID,
+		);
+		if (result.state.spec.repo || result.state.spec.commit)
+			t.put(
+				" (",
+				formatted!"%-20s"(result.state.spec.repo),
+				" @ ",
+				result.state.spec.commit,
+				")",
+			);
+	}
+	t.put("\n");
 }
 
 Term.Color jobStatusColor(JobStatus status)
@@ -107,13 +116,26 @@ Term.Color jobStatusColor(JobStatus status)
 	}
 }
 
+string jobStatusText(JobStatus status)
+{
+	switch (status)
+	{
+		case JobStatus.none:
+			return "(no data)";
+		default:
+			return status.text;
+	}
+}
+
 void printJobResult(ref JobResult result)
 {
 	auto t = term;
 	if (result.jobID)
 		t.put("         Job: ", result.jobID, "\n");
-	t.put("  Repository: ", result.state.spec.repo, "\n");
-	t.put("      Commit: ", result.state.spec.commit, "\n");
+	if (result.state.spec.repo)
+		t.put("  Repository: ", result.state.spec.repo, "\n");
+	if (result.state.spec.commit)
+		t.put("      Commit: ", result.state.spec.commit, "\n");
 	if (result.state.startTime)
 		t.put("  Start time: ", result.state.startTime.SysTime.formatTime!timeFormat, "\n");
 	if (result.state.finishTime)
@@ -122,7 +144,7 @@ void printJobResult(ref JobResult result)
 			"\n");
 	t.put("      Status: ");
 	t.put(t.fg(jobStatusColor(result.state.status)));
-	t.put(result.state.status);
+	t.put(jobStatusText(result.state.status));
 	if (result.state.statusText)
 		t.put(" (", result.state.statusText, ")");
 	t.put(t.none, "\n");
