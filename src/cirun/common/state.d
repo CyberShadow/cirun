@@ -35,6 +35,8 @@ struct Job /// Description of a specific job.
 {
 	JobSpec spec;
 	string jobID;
+
+	enum parseErrorValue = typeof(this).init;
 }
 
 // Global
@@ -121,6 +123,8 @@ struct JobLogEntry /// Job log entry (append-only)
 		string text;
 	}
 	@JSONOptional Nullable!Data data;
+
+	enum parseErrorValue = typeof(this).init;
 }
 
 auto getJobLogWriter(string jobID) /// ditto

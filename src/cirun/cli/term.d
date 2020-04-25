@@ -51,8 +51,11 @@ void printGlobalStatus()
 
 void printGlobalHistory()
 {
-	foreach (job; getGlobalHistoryReader.reverseIter)
-		printJobSummary(getJobResult(job.jobID));
+	foreach (ref job; getGlobalHistoryReader.reverseIter)
+		if (job is Job.parseErrorValue)
+			printJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
+		else
+			printJobSummary(getJobResult(job.jobID));
 }
 
 auto formatted(string fmt, T...)(auto ref T values)
@@ -94,6 +97,9 @@ void printJobSummary(JobResult result)
 				")",
 			);
 	}
+	else
+	if (result.state.statusText)
+		t.put(" ", t.brightRed, result.state.statusText, t.none);
 	t.put("\n");
 }
 
@@ -197,39 +203,40 @@ struct DurationFmt
 	}
 }
 
-auto blanked(T)(auto ref T value)
+size_t textLength(T)(auto ref T value)
 {
-	static struct Blanked
-	{
-		T value;
-
-		void toString(void delegate(const(char)[]) sink) const
+	size_t length;
+	value.toString(
+		(const(char)[] str)
 		{
-			value.toString(
-				(const(char)[] str)
-				{
-					foreach (c; 0 .. str.length)
-						sink(" ");
-				});
-		}
-	}
-	return Blanked(value);
+			length += str.length;
+		});
+	return length;
 }
 
 struct JobLogPrinter
 {
 	StdTime lastElapsed = StdTime.max;
+	size_t lastTimeLength;
 
 	void printEntry(ref JobLogEntry e)
 	{
 		auto t = term;
 
+		if (e is JobLogEntry.parseErrorValue)
+		{
+			t.put(formatted!"%*s"(lastTimeLength, ""), t.brightRed, "(corrupted log entry)", t.none, "\n");
+			return;
+		}
+
 		auto fmtTime = formatted!"[%s +%s] "(e.time.SysTime.formatTime!"H:i:s", e.elapsed.hnsecs.DurationFmt);
+		auto timeLength = textLength(fmtTime);
 		if (e.elapsed == lastElapsed)
-			t.put(t.darkGray, fmtTime.blanked);
+			t.put(formatted!"%*s"(timeLength, ""));
 		else
 			t.put(t.darkGray, fmtTime);
 		lastElapsed = e.elapsed;
+		lastTimeLength = timeLength;
 
 		if (!e.processStart.isNull)
 			t.put(t.brightCyan, "Process started: ", escapeShellCommand(e.processStart.get.commandLine));

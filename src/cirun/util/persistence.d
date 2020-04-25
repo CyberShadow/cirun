@@ -145,24 +145,21 @@ struct LogReader(T)
 		}
 	}
 
-	static Nullable!T tryParse(string s)
+	static T parseRecord(string s)
 	{
-		alias R = typeof(return);
-		if (!s.length)
-			return R.init;
 		try
-			return R(jsonParse!T(s));
+			return jsonParse!T(s);
 		catch (Exception e)
-			return R.init;
+			return T.parseErrorValue;
 	}
 
 	auto iter()
 	{
 		return data
 			.splitter('\n')
-			.map!tryParse
-			.filter!(l => !l.isNull)
-			.map!(l => l.get);
+			.filter!(l => l.length)
+			.map!parseRecord
+		;
 	}
 
 	auto reverseIter()
@@ -171,11 +168,11 @@ struct LogReader(T)
 			.representation
 			.retro
 			.splitter('\n')
+			.filter!(l => l.length)
 			.map!retro
 			.map!(bytes => cast(string)bytes)
-			.map!tryParse
-			.filter!(l => !l.isNull)
-			.map!(l => l.get);
+			.map!parseRecord
+		;
 	}
 }
 
@@ -183,7 +180,12 @@ unittest
 {
 	if (false) // test instantiation
 	{
-		LogReader!string test;
+		struct S
+		{
+			enum S parseErrorValue = S(null);
+			string s;
+		}
+		LogReader!S test;
 	}
 }
 
