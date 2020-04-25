@@ -49,6 +49,7 @@ static:
 		string commit,
 		Switch!"Wait until this job has finished." wait = false,
 		Switch!"Do not print the job status." quiet = false,
+		Option!(string, "Write job ID to the given file.", "PATH") jobIDFile = null,
 	)
 	{
 		JobSpec spec;
@@ -58,6 +59,8 @@ static:
 		auto result = needJob(spec, null, wait);
 		if (!quiet)
 			printJobResult(result);
+		if (jobIDFile)
+			File(jobIDFile, "wb").writeln(result.jobID);
 	}
 
 	@(`Show status. If an ID is specified, show the status of a matching job.`)
