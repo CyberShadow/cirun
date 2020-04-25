@@ -44,7 +44,7 @@ struct JobResult
 /// Get the state of a job, queuing or starting it if necessary.
 /// If retestID is null or the last job for this repo/commit is
 /// retestID, start a new job.
-JobResult needJob(ref JobSpec spec, string retestID)
+JobResult needJob(ref JobSpec spec, string retestID, bool wait)
 {
 	getCommitStatePath(spec.repo, spec.commit).ensurePathExists();
 	{
@@ -53,7 +53,16 @@ JobResult needJob(ref JobSpec spec, string retestID)
 			return getJobResult(commitState.value.lastJobID);
 	}
 
-	return queueJob(spec);
+	auto result = queueJob(spec);
+
+	if (wait)
+	{
+		auto runLock = File(getJobRunLockPath(result.jobID), "rb");
+		runLock.lock(LockType.read);
+		result = getJobResult(result.jobID);
+	}
+
+	return result;
 }
 
 /// Allocate a new unique job ID.
@@ -110,9 +119,8 @@ private JobResult queueJob(ref JobSpec spec)
 /// Start a runner for this job now.
 private JobResult startJob(string jobID)
 {
-	auto lockPath = getJobStartLockPath(jobID);
-	ensurePathExists(lockPath);
-	auto startLock = File(lockPath, "ab");
+	mkdirRecurse(getJobDir(Root.work, jobID));
+	auto startLock = File(getJobStartLockPath(jobID), "ab");
 	startLock.lock();
 
 	JobResult result;

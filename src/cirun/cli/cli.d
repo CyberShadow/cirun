@@ -43,13 +43,18 @@ static:
 	}
 
 	@(`Show information about the last job (starting one if none) for the given repository commit.`)
-	void run(string repository, string cloneURL, string commit)
+	void run(
+		string repository,
+		string cloneURL,
+		string commit,
+		Switch!"Wait until this job has finished." wait = false,
+	)
 	{
 		JobSpec spec;
 		spec.repo = repository;
 		spec.cloneURL = cloneURL;
 		spec.commit = commit;
-		auto result = needJob(spec, null);
+		auto result = needJob(spec, null, wait);
 		printJobResult(result);
 	}
 
