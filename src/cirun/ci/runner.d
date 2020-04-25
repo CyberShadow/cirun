@@ -63,16 +63,14 @@ void runJob(string jobID)
 
 	try
 	{
-		auto jobDataDir = getJobDir(Root.data, jobID);
-		auto logFile = File(jobDataDir.buildPath("log.json"), "wb");
+		auto logFile = getJobLogWriter(jobID);
 		auto startTime = MonoTime.currTime;
 
 		void log(JobLogEntry e)
 		{
 			e.time = Clock.currTime.stdTime;
 			e.elapsed = (MonoTime.currTime - startTime).stdTime;
-			logFile.writeln(e.toJson);
-			logFile.flush();
+			logFile.put(e);
 		}
 
 		auto repoDir = getJobDir(Root.work, jobID).buildPath("r", spec.repo.baseName);
