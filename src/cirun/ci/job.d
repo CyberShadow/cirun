@@ -154,11 +154,11 @@ JobResult getJobResult(string jobID)
 
 	if (jobState.value.status.among(JobStatus.starting, JobStatus.running))
 	{
-		auto startLock = File(getJobStartLockPath(jobID), "ab");
-		if (startLock.tryLock())
+		auto startLock = File(getJobStartLockPath(jobID), "a+b");
+		if (startLock.tryLock(LockType.read))
 		{
-			auto runLock = File(getJobRunLockPath(jobID), "ab");
-			if (runLock.tryLock())
+			auto runLock = File(getJobRunLockPath(jobID), "a+b");
+			if (runLock.tryLock(LockType.read))
 			{
 				jobState.value.status = JobStatus.errored;
 				jobState.value.statusText = "job runner process did not exit gracefully";
