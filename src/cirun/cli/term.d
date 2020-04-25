@@ -22,13 +22,13 @@ import std.array;
 import std.conv;
 import std.datetime.systime;
 import std.format;
-import std.functional;
 import std.process;
 import std.string;
 import std.traits;
 
 import ae.sys.term;
 import ae.utils.exception;
+import ae.utils.time : StdTime;
 import ae.utils.time.format;
 
 import cirun.common.state;
@@ -170,13 +170,17 @@ void printJobResult(ref JobResult result)
 		{}
 
 		t.put('\n');
-		lines[pos .. $].each!printJobLogEntry();
+
+		JobLogPrinter p;
+		foreach (ref entry; lines[pos .. $])
+			p.printEntry(entry);
 	}
 }
 
 void printJobLog(string jobID)
 {
-	getJobLogReader(jobID).iter.preprocessLog!false(toDelegate(&printJobLogEntry));
+	JobLogPrinter p;
+	getJobLogReader(jobID).iter.preprocessLog!false(&p.printEntry);
 }
 
 struct DurationFmt
@@ -193,17 +197,49 @@ struct DurationFmt
 	}
 }
 
-void printJobLogEntry(ref JobLogEntry e)
+auto blanked(T)(auto ref T value)
 {
-	auto t = term;
-	t.put(t.darkGray, "[", e.time.SysTime.formatTime!"H:i:s", " +", e.elapsed.hnsecs.DurationFmt, "] ");
-	if (!e.processStart.isNull)
-		t.put(t.brightCyan, "Process started: ", escapeShellCommand(e.processStart.get.commandLine));
-	else
-	if (!e.processFinish.isNull)
-		t.put(e.processFinish.get.exitCode == 0 ? t.brightCyan : t.red, "Process finished with exit code ", e.processFinish.get.exitCode);
-	else
-	if (!e.data.isNull)
-		t.put(e.data.get.stream == JobLogEntry.Data.Stream.stderr ? t.yellow : t.none, e.data.get.text.chomp);
-	t.put(t.none, '\n');
+	static struct Blanked
+	{
+		T value;
+
+		void toString(void delegate(const(char)[]) sink) const
+		{
+			value.toString(
+				(const(char)[] str)
+				{
+					foreach (c; 0 .. str.length)
+						sink(" ");
+				});
+		}
+	}
+	return Blanked(value);
+}
+
+struct JobLogPrinter
+{
+	StdTime lastElapsed = StdTime.max;
+
+	void printEntry(ref JobLogEntry e)
+	{
+		auto t = term;
+
+		auto fmtTime = formatted!"[%s +%s] "(e.time.SysTime.formatTime!"H:i:s", e.elapsed.hnsecs.DurationFmt);
+		if (e.elapsed == lastElapsed)
+			t.put(t.darkGray, fmtTime.blanked);
+		else
+			t.put(t.darkGray, fmtTime);
+		lastElapsed = e.elapsed;
+
+		if (!e.processStart.isNull)
+			t.put(t.brightCyan, "Process started: ", escapeShellCommand(e.processStart.get.commandLine));
+		else
+		if (!e.processFinish.isNull)
+			t.put(e.processFinish.get.exitCode == 0 ? t.brightCyan : t.red, "Process finished with exit code ", e.processFinish.get.exitCode);
+		else
+		if (!e.data.isNull)
+			t.put(e.data.get.stream == JobLogEntry.Data.Stream.stderr ? t.yellow : t.none, e.data.get.text.chomp);
+
+		t.put(t.none, '\n');
+	}
 }
