@@ -17,6 +17,7 @@ import core.thread;
 import core.time;
 
 import std.algorithm.iteration;
+import std.algorithm.sorting;
 import std.array;
 import std.conv;
 import std.datetime.systime;
@@ -27,6 +28,7 @@ import std.process;
 import std.stdio;
 
 import ae.sys.file : readPartial, pushd;
+import ae.utils.aa : orderedMap;
 import ae.utils.exception;
 import ae.utils.json;
 import ae.utils.path;
@@ -36,6 +38,7 @@ import cirun.ci.job : updateJobs, runnerStartLine;
 import cirun.common.config;
 import cirun.common.paths;
 import cirun.common.state;
+import cirun.util.persistence : LogWriter;
 
 void runJob(string jobID)
 {
@@ -52,6 +55,16 @@ void runJob(string jobID)
 		jobState.status = JobStatus.running;
 	});
 
+	LogWriter!JobLogEntry logFile;
+	auto startTime = MonoTime.currTime;
+
+	void log(JobLogEntry e)
+	{
+		e.time = Clock.currTime.stdTime;
+		e.elapsed = (MonoTime.currTime - startTime).stdTime;
+		logFile.put(e);
+	}
+
 	void finishJob(JobStatus status, string statusText = null)
 	{
 		getJobState(jobID).edit((ref jobState) {
@@ -59,21 +72,29 @@ void runJob(string jobID)
 			jobState.statusText = statusText;
 			jobState.finishTime = Clock.currTime.stdTime;
 		});
+		if (logFile.isOpen)
+		{
+			JobLogEntry e = { jobFinish : JobLogEntry.JobFinish(status, statusText) };
+			log(e);
+		}
 	}
 
 	try
 	{
-		auto logFile = getJobLogWriter(jobID);
-		auto startTime = MonoTime.currTime;
-
-		void log(JobLogEntry e)
-		{
-			e.time = Clock.currTime.stdTime;
-			e.elapsed = (MonoTime.currTime - startTime).stdTime;
-			logFile.put(e);
-		}
+		logFile = getJobLogWriter(jobID);
 
 		auto repoDir = getJobRepoDir(jobID, spec.repo);
+
+		{
+			auto environ = environment.toAA
+				.byKeyValue
+				.array
+				.sort!((a, b) => a.key < b.key)
+				.release
+				.orderedMap;
+			JobLogEntry e = { jobStart : JobLogEntry.JobStart(environ, repoDir) };
+			log(e);
+		}
 
 		void runProgram(string what, string[] commandLine)
 		{
