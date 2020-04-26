@@ -16,17 +16,22 @@ module cirun.common.paths;
 import std.array : replace, split;
 import std.exception : enforce;
 import std.file : tempDir;
-import std.path : buildPath, dirSeparator;
+import std.path : buildPath, dirSeparator, dirName;
 
 import ae.sys.process : getCurrentUser;
 
 import cirun.common.config;
 import cirun.common.ids;
 
+/// For a possibly-relative path,
+/// ensure it's relative to the configuration file's directory.
+alias configRelativePath = (string path) =>
+	configRoot.dirName.buildPath(path);
+
 string workDir()
 {
 	if (config.workDir)
-		return config.workDir;
+		return config.workDir.configRelativePath;
 	return tempDir.buildPath("cirun." ~ getCurrentUser());
 }
 
@@ -43,7 +48,7 @@ string getRoot(Root root)
 		case Root.work:
 			return workDir;
 		case Root.data:
-			return config.dataDir;
+			return config.dataDir.configRelativePath;
 	}
 }
 
