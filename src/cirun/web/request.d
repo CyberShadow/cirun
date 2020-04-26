@@ -21,8 +21,12 @@ import ae.net.http.common;
 import ae.net.http.responseex;
 import ae.sys.dataset;
 import ae.sys.log;
+import ae.utils.array;
 
 import cirun.common.config;
+import cirun.web.common;
+import cirun.web.html;
+import cirun.web.statics;
 import cirun.web.webhook;
 
 void handleRequest(
@@ -32,24 +36,66 @@ void handleRequest(
 	ref Logger log,
 )
 {
+	/*
+	  There are a few conflicting goals with the possible ways to
+	  handle authentication and static resources:
+
+	  - Ideally, error pages (wrong prefix or unauthorized) should be
+	    appropriately styled.
+
+	  - Ideally, reusable static resources should be in their own
+	    files, and served with an appropriate cache header.
+
+	  - Ideally, visiting a page with an incorrect path prefix should
+	    not expose the correct one.
+
+	  From above, choose any two:
+
+	  - We could embed all resources in the HTML page, which will make
+	    them self-contained and not expose the correct prefix, but
+	    won't work for things like the favicon.
+
+	  - We could not care about error pages and allow them to look
+	    broken. Static resources will be available on non-error pages.
+
+	  - We could (try to) always link to the static resources, and
+	    make them available to unauthorized users.
+
+	  The approach cirun uses here is to show bare-bones error pages
+	  for unauthenticated requests, and appropriately styled ones for
+	  authenticated requests.
+	 */
+
 	auto response = new HttpResponseEx();
-
-	if ((serverConfig.username || serverConfig.password) &&
-		!response.authorize(request, (reqUser, reqPass) =>
-			reqUser == serverConfig.username && reqPass == serverConfig.password))
-		return handleResponse(response);
-
 	response.status = HttpStatusCode.OK;
+	response.pageTemplate = minimalPageTemplate;
 
 	try
 	{
 		auto path = request.path;
 		path.skipOver(serverConfig.prefix).httpEnforce(HttpStatusCode.NotFound);
-		auto pathParts = path.split("/");
-		if (!pathParts.length)
-			pathParts = [""]; // TODO index
+		auto pathParts = path.split1("/");
+
+		if ((serverConfig.username || serverConfig.password) &&
+			!response.authorize(request, (reqUser, reqPass) =>
+				reqUser == serverConfig.username && reqPass == serverConfig.password))
+			return handleResponse(response);
+
+		response.pageTemplate = pageTemplate; // Safe to use the full template past this point
+		response.pageTokens["static-root"] = "../".replicate(pathParts.length - 1) ~ "static/" ~ staticCacheKey ~ "/";
+
 		switch (pathParts[0])
 		{
+			case "static":
+				(pathParts.length >= 3).httpEnforce(HttpStatusCode.NotFound);
+				(pathParts[1] == staticCacheKey).httpEnforce(HttpStatusCode.NotFound);
+				response.serveStatic(pathParts[2..$].join("/"));
+				response.cacheForever();
+				break;
+			case "favicon.ico":
+				response.headers["Location"] = "static/" ~ staticCacheKey ~ "/favicon.svg";
+				response.status = HttpStatusCode.Found;
+				break;
 			case "webhook":
 				(pathParts.length == 1).httpEnforce(HttpStatusCode.NotFound);
 				(request.method == "POST").httpEnforce(HttpStatusCode.MethodNotAllowed);
@@ -71,10 +117,3 @@ void handleRequest(
 	}
 	handleResponse(response);
 }
-
-class HttpException : Exception
-{
-	HttpStatusCode status;
-	this(HttpStatusCode status, string msg = null) { this.status = status; super(msg); }
-}
-T httpEnforce(T)(T val, HttpStatusCode status, string msg = null) { return enforce(val, new HttpException(status, msg)); }

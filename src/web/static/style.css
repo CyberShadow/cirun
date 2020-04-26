@@ -1,0 +1,10 @@
+body {
+	font-family: Montserrat, Ubuntu, sans-serif;
+	width: 800px;
+	margin: 80px auto;
+}
+
+h1 {
+	font-size: 36pt;
+	border-bottom: 1px solid #ddd;
+}
