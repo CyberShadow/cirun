@@ -16,6 +16,7 @@ module cirun.common.state;
 import std.typecons : Nullable;
 
 import ae.sys.file;
+import ae.utils.aa;
 import ae.utils.json : JSONOptional;
 import ae.utils.time : StdTime;
 
@@ -99,6 +100,20 @@ struct JobLogEntry /// Job log entry (append-only)
 {
 	StdTime time; // Absolute wall clock time (hnsecs since SysTime epoch)
 	StdTime elapsed; // Relative monotonic time since job start
+
+	struct JobStart
+	{
+		OrderedMap!(string, string) environment;
+		string currentDirectory;
+	}
+	@JSONOptional Nullable!JobStart jobStart;
+
+	struct JobFinish
+	{
+		JobStatus status;
+		string statusText;
+	}
+	@JSONOptional Nullable!JobFinish jobFinish;
 
 	struct ProcessStart
 	{
