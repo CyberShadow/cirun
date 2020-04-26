@@ -114,6 +114,8 @@ struct LogWriter(T)
 		}
 		f.flush();
 	}
+
+	bool isOpen() { return f.isOpen; }
 }
 
 unittest
