@@ -258,7 +258,7 @@ struct JobLogPrinter
 		else
 		if (!e.jobFinish.isNull)
 		{
-			t.put(t.cyan, "Job finished with status ", t.fg(jobStatusColor(e.jobFinish.get.status)), jobStatusText(e.jobFinish.get.status));
+			t.put(t.fg(jobStatusColor(e.jobFinish.get.status)), "Job finished with status ", jobStatusText(e.jobFinish.get.status));
 			if (e.jobFinish.get.statusText)
 				t.put(" (", e.jobFinish.get.statusText, ")");
 		}
