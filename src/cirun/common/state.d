@@ -47,7 +47,11 @@ struct GlobalState /// Persistent global state
 	Job[] jobs; /// Active jobs (with status queued/starting/running)
 }
 
-auto getGlobalState() { return Persistent!GlobalState(getGlobalStatePath()); } /// ditto
+auto getGlobalState() /// ditto
+{
+	getRoot(Root.data).ensureDirExists;
+	return Persistent!GlobalState(getGlobalStatePath());
+}
 
 alias GlobalHistoryEntry = Job; /// Global history entry (append-only)
 
