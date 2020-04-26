@@ -23,6 +23,7 @@ import std.conv;
 import std.datetime.systime;
 import std.format;
 import std.process;
+import std.range;
 import std.string;
 import std.traits;
 
@@ -47,11 +48,20 @@ void printGlobalStatus()
 	t.put(results.length, " total\n");
 	foreach (result; results)
 		printJobSummary(result);
+
+	enum numHistoryEntries = 10;
+	t.put("\nLast ", numHistoryEntries, " jobs:\n");
+	printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
 }
 
 void printGlobalHistory()
 {
-	foreach (ref job; getGlobalHistoryReader.reverseIter)
+	printGlobalHistory(getGlobalHistoryReader.reverseIter);
+}
+
+void printGlobalHistory(R)(R jobs)
+{
+	foreach (ref job; jobs)
 		if (job is Job.parseErrorValue)
 			printJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
 		else
