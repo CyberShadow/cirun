@@ -238,11 +238,26 @@ struct JobLogPrinter
 		lastElapsed = e.elapsed;
 		lastTimeLength = timeLength;
 
+		if (!e.jobStart.isNull)
+		{
+			t.put(t.cyan, "Job started.\n", formatted!"%*s"(timeLength, ""), "Environment:\n");
+			foreach (name, value; e.jobStart.get.environment)
+				t.put(formatted!"%*s"(timeLength + 2, ""), name, "=", value, "\n");
+			t.put(formatted!"%*s"(timeLength, ""), "Working directory: ", e.jobStart.get.currentDirectory);
+		}
+		else
+		if (!e.jobFinish.isNull)
+		{
+			t.put(t.cyan, "Job finished with status ", t.fg(jobStatusColor(e.jobFinish.get.status)), jobStatusText(e.jobFinish.get.status));
+			if (e.jobFinish.get.statusText)
+				t.put(" (", e.jobFinish.get.statusText, ")");
+		}
+		else
 		if (!e.processStart.isNull)
-			t.put(t.brightCyan, "Process started: ", escapeShellCommand(e.processStart.get.commandLine));
+			t.put(t.cyan, "Process started: ", escapeShellCommand(e.processStart.get.commandLine));
 		else
 		if (!e.processFinish.isNull)
-			t.put(e.processFinish.get.exitCode == 0 ? t.brightCyan : t.red, "Process finished with exit code ", e.processFinish.get.exitCode);
+			t.put(e.processFinish.get.exitCode == 0 ? t.cyan : t.red, "Process finished with exit code ", e.processFinish.get.exitCode);
 		else
 		if (!e.data.isNull)
 			t.put(e.data.get.stream == JobLogEntry.Data.Stream.stderr ? t.yellow : t.none, e.data.get.text.chomp);
