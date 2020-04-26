@@ -64,7 +64,7 @@ If a job for the given commit already exists, show information about that job in
 		if (!quiet)
 			printJobResult(result);
 		if (jobIDFile)
-			File(jobIDFile, "wb").writeln(result.jobID);
+			(jobIDFile == "-" ? stdout : File(jobIDFile, "wb")).writeln(result.jobID);
 	}
 
 	@(`Show status.
