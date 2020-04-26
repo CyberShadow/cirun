@@ -19,6 +19,7 @@ import std.algorithm.iteration;
 import std.array;
 import std.exception;
 import std.file;
+import std.format;
 import std.parallelism : totalCPUs;
 import std.path : globMatch;
 
@@ -72,13 +73,14 @@ immutable Config config;
 
 struct Opts
 {
-	Option!(string, "Path to the configuration file to use", "PATH", 'f') configFile;
+	Option!(string, "Path to the configuration file or directory to use", "PATH", 'f') configFile;
 	Option!(string[], "Additional configuration.\nEquivalent to cirun.conf settings.", "NAME=VALUE", 'c', "config") configLines;
 
 	Parameter!(string, "Action to perform (see list below)") action;
 	Parameter!(immutable(string)[]) actionArguments;
 }
 immutable Opts opts;
+immutable string configRoot; // file or directory
 immutable string[] configFiles;
 
 shared static this()
@@ -88,35 +90,46 @@ shared static this()
 	void usageFun(string) {}
 	auto opts = funopt!(fun, funOpts, usageFun)(Runtime.args);
 
-	enum mainConfigFile = "cirun.conf";
-	enum sampleConfigFile = mainConfigFile ~ ".sample";
-	enum configDir = mainConfigFile ~ ".d";
+	enum configFileName = "cirun.conf";
+	enum sampleConfigFileName = configFileName ~ ".sample";
+	enum configDirName = configFileName ~ ".d";
 	enum defaultConfig = import("cirun.conf.sample");
 	immutable(string)[] configFiles;
+	bool configRootIsDir;
 
 	if (opts.configFile)
 	{
 		enforce(opts.configFile.exists, "Specified configuration file does not exist: " ~ opts.configFile);
-		if (opts.configFile.isDir)
-			configFiles ~= opts.configFile.dirEntries("*.conf", SpanMode.depth).map!(de => de.name).array;
-		else
-			configFiles = [opts.configFile];
+		configRoot = opts.configFile;
+		configRootIsDir = configRoot.isDir;
 	}
 	else
 	{
-		configFiles ~= mainConfigFile;
-		if (configDir.exists)
-			configFiles ~= configDir.dirEntries("*.conf", SpanMode.depth).map!(de => de.name).array;
+		if (!configDirName.exists)
+			configRoot = configFileName;
+		else
+		{
+			enforce(!configFileName.exists,"Found both a configuration file (%s) and directory (%s). Only one must exist."
+				.format(configFileName, configDirName));
+			configRoot = configDirName;
+			configRootIsDir = true;
+		}
 	}
+
+	if (configRootIsDir)
+		configFiles ~= configRoot.dirEntries("*.conf", SpanMode.depth).map!(de => de.name).array;
+	else
+		configFiles = [configRoot];
+
 	configFiles = configFiles.filter!exists.array;
 	.configFiles = configFiles;
 	if (!configFiles.length)
 	{
-		write(sampleConfigFile, defaultConfig);
+		write(sampleConfigFileName, defaultConfig);
 		throw new Exception("\n" ~
 			"Configuration file or directory not found.\n" ~
-			"Created " ~ sampleConfigFile ~ ".\n" ~
-			"Please edit " ~ sampleConfigFile ~ ", rename it to " ~ mainConfigFile ~ ", and rerun cirun.");
+			"Created " ~ sampleConfigFileName ~ ".\n" ~
+			"Please edit " ~ sampleConfigFileName ~ ", rename it to " ~ configFileName ~ ", and rerun cirun.");
 	}
 
 	auto config = loadInis!Config(configFiles);
