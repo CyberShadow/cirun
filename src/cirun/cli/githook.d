@@ -87,6 +87,24 @@ EOF"
 					selfCmdLine.map!escapePosixShellArgument.array,
 					repositoryName.escapePosixShellArgument,
 				);
+		case "post-receive":
+			return q"EOF
+#!/bin/sh
+#
+# Git post-receive hook to trigger cirun jobs.
+
+unset GIT_DIR # Don't propagate to cirun jobs
+
+git_dir=$(git rev-parse --absolute-git-dir)
+while read -r old_sha1 new_sha1 ref
+do
+	%-(%s %) run --quiet %s "$git_dir" "$new_sha1"
+done
+EOF"
+				.format(
+					selfCmdLine.map!escapePosixShellArgument.array,
+					repositoryName.escapePosixShellArgument,
+				);
 		default:
 			throw new Exception("Unknown hook kind");
 	}
