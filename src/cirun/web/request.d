@@ -86,6 +86,11 @@ void handleRequest(
 
 		switch (pathParts[0])
 		{
+			case "":
+				(pathParts.length == 1).httpEnforce(HttpStatusCode.NotFound);
+				(request.method == "GET").httpEnforce(HttpStatusCode.MethodNotAllowed);
+				response.serveIndexPage();
+				break;
 			case "static":
 				(pathParts.length >= 3).httpEnforce(HttpStatusCode.NotFound);
 				(pathParts[1] == staticCacheKey).httpEnforce(HttpStatusCode.NotFound);
