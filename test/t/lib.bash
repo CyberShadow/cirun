@@ -44,3 +44,11 @@ function git() {
 		-c user.email='test-suite@cirun.thecybershadow.net' \
 		"$@"
 }
+
+function xfail() {
+	if "$@"
+	then
+		echo "Command" "$@" "expected to fail, but it succeeded"
+		false
+	fi
+}
