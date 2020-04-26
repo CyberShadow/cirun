@@ -27,7 +27,7 @@ import std.range;
 import std.string;
 import std.traits;
 
-import ae.sys.term;
+import ae.sys.term : Term;
 import ae.utils.exception;
 import ae.utils.time : StdTime;
 import ae.utils.time.format;
@@ -38,34 +38,33 @@ import cirun.common.job.log;
 
 enum timeFormat = "Y-m-d H:i:s.u";
 
-void printGlobalStatus()
+void printGlobalStatus(Term t)
 {
 	auto results = getGlobalState().updateJobs();
-	auto t = term;
 	t.put("  Jobs: ");
 	foreach (g; results.map!(result => result.state.status).array.sort.group)
 		t.put(t.fg(jobStatusColor(g[0])), g[1], t.none, " ", g[0], ", ");
 	t.put(results.length, " total\n");
 	foreach (result; results)
-		printJobSummary(result);
+		t.printJobSummary(result);
 
 	enum numHistoryEntries = 10;
 	t.put("\nLast ", numHistoryEntries, " jobs:\n");
-	printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
+	t.printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
 }
 
-void printGlobalHistory()
+void printGlobalHistory(Term t)
 {
-	printGlobalHistory(getGlobalHistoryReader.reverseIter);
+	t.printGlobalHistory(getGlobalHistoryReader.reverseIter);
 }
 
-void printGlobalHistory(R)(R jobs)
+void printGlobalHistory(R)(Term t, R jobs)
 {
 	foreach (ref job; jobs)
 		if (job is Job.parseErrorValue)
-			printJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
+			t.printJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
 		else
-			printJobSummary(getJobResult(job.jobID));
+			t.printJobSummary(getJobResult(job.jobID));
 }
 
 auto formatted(string fmt, T...)(auto ref T values)
@@ -83,9 +82,8 @@ auto formatted(string fmt, T...)(auto ref T values)
 
 enum maxStatusLength = [EnumMembers!(JobStatus)].map!(status => jobStatusText(status).length).reduce!max;
 
-void printJobSummary(JobResult result)
+void printJobSummary(Term t, JobResult result)
 {
-	auto t = term;
 	t.put(
 		t.fg(jobStatusColor(result.state.status)),
 	//	"• ",
@@ -144,9 +142,8 @@ string jobStatusText(JobStatus status)
 	}
 }
 
-void printJobResult(ref JobResult result)
+void printJobResult(Term t, ref JobResult result)
 {
-	auto t = term;
 	if (result.jobID)
 		t.put("         Job: ", result.jobID, "\n");
 	if (result.state.spec.repo)
@@ -187,15 +184,15 @@ void printJobResult(ref JobResult result)
 
 		t.put('\n');
 
-		JobLogPrinter p;
+		auto p = JobLogPrinter(t);
 		foreach (ref entry; lines[pos .. $])
 			p.printEntry(entry);
 	}
 }
 
-void printJobLog(string jobID)
+void printJobLog(Term t, string jobID)
 {
-	JobLogPrinter p;
+	auto p = JobLogPrinter(t);
 	getJobLogReader(jobID).iter.preprocessLog!false(&p.printEntry);
 }
 
@@ -226,13 +223,12 @@ size_t textLength(T)(auto ref T value)
 
 struct JobLogPrinter
 {
+	Term t;
 	StdTime lastElapsed = StdTime.max;
 	size_t lastTimeLength;
 
 	void printEntry(ref JobLogEntry e)
 	{
-		auto t = term;
-
 		if (e is JobLogEntry.parseErrorValue)
 		{
 			t.put(formatted!"%*s"(lastTimeLength, ""), t.brightRed, "(corrupted log entry)", t.none, "\n");

@@ -21,6 +21,7 @@ import std.path;
 import std.stdio;
 import std.string;
 
+import ae.sys.term : term;
 import ae.utils.funopt;
 import ae.utils.meta : structFun;
 
@@ -63,7 +64,7 @@ If a job for the given commit already exists, show information about that job in
 		spec.commit = commit;
 		auto result = needJob(spec, null, wait);
 		if (!quiet)
-			printJobResult(result);
+			term.printJobResult(result);
 		if (jobIDFile)
 			(jobIDFile == "-" ? stdout : File(jobIDFile, "wb")).writeln(result.jobID);
 	}
@@ -94,10 +95,10 @@ The syntax is as follows:
 			if (format)
 				formatJobResult(result, format).write;
 			else
-				printJobResult(result);
+				term.printJobResult(result);
 		}
 		else
-			printGlobalStatus();
+			term.printGlobalStatus();
 	}
 
 	@(`Show log.
@@ -110,10 +111,10 @@ If an ID is specified, show the log of a matching job.`)
 		if (id)
 		{
 			auto jobID = resolveJob(id);
-			printJobLog(jobID);
+			term.printJobLog(jobID);
 		}
 		else
-			printGlobalHistory();
+			term.printGlobalHistory();
 	}
 
 	@(`Install a git hook in the given repository which invokes cirun in response to specific actions.`)
