@@ -30,6 +30,7 @@ import cirun.cli.githook;
 import cirun.cli.term;
 import cirun.common.config;
 import cirun.common.ids;
+import cirun.common.job.format;
 import cirun.common.paths;
 import cirun.common.state;
 import cirun.web.server;
@@ -71,14 +72,29 @@ If a job for the given commit already exists, show information about that job in
 
 If an ID is specified, show the status of a matching job.`)
 	void status(
-		Parameter!(string, "A job ID, commit hash, or repository name.") id = null
+		Parameter!(string, "A job ID, commit hash, or repository name.") id = null,
+		Option!(string, `Print information in the given format.
+The syntax is as follows:
+  %j  - Job ID
+  %r  - Repository name
+  %c  - Commit hash
+  %s  - Status
+  %S  - Status text
+  %bs - Start time  (hectonanoseconds from midnight,
+                     January 1st, 1 A.D. UTC)
+  %es - Finish time (hectonanoseconds from midnight,
+                     January 1st, 1 A.D. UTC)
+  %%  - Literal %`, null, 'c') format = null,
 	)
 	{
 		if (id)
 		{
 			auto jobID = resolveJob(id);
 			auto result = getJobResult(jobID);
-			printJobResult(result);
+			if (format)
+				formatJobResult(result, format).write;
+			else
+				printJobResult(result);
 		}
 		else
 			printGlobalStatus();
