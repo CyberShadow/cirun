@@ -26,6 +26,10 @@ then
 
 	rm -rf "$test_dir"
 	mkdir "$test_dir"
+
+	export HOME=$test_dir/home
+	mkdir "$HOME"
+
 	cd "$test_dir"
 
 	{
@@ -33,3 +37,10 @@ then
 		printf 'workDir = cirun-work\n'
 	} > cirun.conf
 fi
+
+function git() {
+	command git \
+		-c user.name='cirun test suite' \
+		-c user.email='test-suite@cirun.thecybershadow.net' \
+		"$@"
+}
