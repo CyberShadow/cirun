@@ -14,7 +14,8 @@ commit=$(git -C "$test_dir"/repo rev-parse HEAD)
 
 echo garbage >> cirun-data/jobs/*/*/log.json
 
-diff -u <("$cirun" log repo 2>&1 | tail -n 2 | tr 0-9 '#') /dev/stdin <<'EOF'
+diff -u <("$cirun" log repo 2>&1 | tail -n 3 | tr 0-9 '#') /dev/stdin <<'EOF'
 [##:##:## +##:##.###] Process finished with exit code #
+[##:##:## +##:##.###] Job finished with status success
                       (corrupted log entry)
 EOF

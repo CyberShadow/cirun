@@ -13,7 +13,7 @@ git -C "$test_dir"/repo commit -qm 'Initial commit'
 commit=$(git -C "$test_dir"/repo rev-parse HEAD)
 
 "$cirun" run --wait repo "$test_dir"/repo "$commit" 2>&1 | grep -F 'Status: success'
-diff -u <("$cirun" log repo 2>&1 | tail -n 7 | tr 0-9 '#') /dev/stdin <<'EOF'
+diff -u <("$cirun" log repo 2>&1 | tail -n 8 | tr 0-9 '#') /dev/stdin <<'EOF'
 [##:##:## +##:##.###] Process started: './.cirun'
 [##:##:## +##:##.###] a
                       b
@@ -21,4 +21,5 @@ diff -u <("$cirun" log repo 2>&1 | tail -n 7 | tr 0-9 '#') /dev/stdin <<'EOF'
                       d
                       e
 [##:##:## +##:##.###] Process finished with exit code #
+[##:##:## +##:##.###] Job finished with status success
 EOF
