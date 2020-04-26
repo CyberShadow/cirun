@@ -17,6 +17,7 @@ import std.algorithm.searching;
 import std.conv;
 import std.exception;
 import std.file : thisExePath, exists;
+import std.path;
 import std.stdio;
 import std.string;
 
@@ -25,6 +26,7 @@ import ae.utils.meta : structFun;
 
 import cirun.ci.job;
 import cirun.ci.runner;
+import cirun.cli.githook;
 import cirun.cli.term;
 import cirun.common.config;
 import cirun.common.ids;
@@ -96,6 +98,18 @@ If an ID is specified, show the log of a matching job.`)
 		}
 		else
 			printGlobalHistory();
+	}
+
+	@(`Install a git hook in the given repository which invokes cirun in response to specific actions.`)
+	void installGitHook(
+		Parameter!(string, "The kind of hook to install (post-commit, pre-push, or post-receive).") kind,
+		Parameter!(string, "The path to the repository where the hook will be installed.\nDefaults to the current directory.") repositoryPath = ".",
+		Parameter!(string, "The name of the repository to use.\nDefaults to the repository's directory name.") repositoryName = null,
+	)
+	{
+		if (!repositoryName)
+			repositoryName = repositoryPath.absolutePath.buildNormalizedPath.baseName;
+		.installGitHook(kind, repositoryPath, repositoryName);
 	}
 
 	// Internal
