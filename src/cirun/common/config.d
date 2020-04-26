@@ -21,7 +21,7 @@ import std.exception;
 import std.file;
 import std.format;
 import std.parallelism : totalCPUs;
-import std.path : globMatch;
+import std.path : globMatch, absolutePath;
 
 static import std.getopt;
 
@@ -154,4 +154,18 @@ RepositoryConfig getRepositoryConfig(string name)
 		if (name.globMatch(mask))
 			section.deserializeInto(result);
 	return result;
+}
+
+/// Return a command-line prefix to use when self-executing,
+/// which includes all pertinent configuration,
+/// so that the new instance is configured in the same way as this one.
+string[] selfCmdLine()
+{
+	string[] args = [
+		thisExePath.absolutePath,
+		"-f", configRoot.absolutePath,
+	];
+	foreach (line; opts.configLines)
+		args ~= ["-c", line];
+	return args;
 }
