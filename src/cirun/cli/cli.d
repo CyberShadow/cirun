@@ -101,20 +101,30 @@ The syntax is as follows:
 			term.printGlobalStatus();
 	}
 
-	@(`Show log.
-
-If an ID is specified, show the log of a matching job.`)
+	@(`Show the log of a matching job.`)
 	void log(
-		Parameter!(string, "A job ID, commit hash, or repository name.") id = null
+		Parameter!(string, "A job ID, commit hash, or repository name.") id,
 	)
 	{
-		if (id)
-		{
-			auto jobID = resolveJob(id);
-			term.printJobLog(jobID);
-		}
-		else
+		auto jobID = resolveJob(id);
+		term.printJobLog(jobID);
+	}
+
+	@(`Show the job history.
+
+If a repository / commit is specified, show the job history for that object.`)
+	void history(
+		Parameter!(string, "Repository name.") repo = null,
+		Parameter!(string, "Commit hash.") commit = null,
+	)
+	{
+		if (!repo)
 			term.printGlobalHistory();
+		else
+		if (!commit)
+			term.printRepoHistory(repo);
+		else
+			term.printCommitHistory(repo, commit);
 	}
 
 	@(`Install a git hook in the given repository which invokes cirun in response to specific actions.`)

@@ -50,21 +50,39 @@ void printGlobalStatus(Term t)
 
 	enum numHistoryEntries = 10;
 	t.put("\nLast ", numHistoryEntries, " jobs:\n");
-	t.printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
+	t.printHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
 }
 
 void printGlobalHistory(Term t)
 {
-	t.printGlobalHistory(getGlobalHistoryReader.reverseIter);
+	t.put("Global job history:\n");
+	t.printHistory(getGlobalHistoryReader.reverseIter);
 }
 
-void printGlobalHistory(R)(Term t, R jobs)
+void printRepoHistory(Term t, string repo)
 {
+	t.put("Job history for repository ", repo, ":\n");
+	t.printHistory(getRepoHistoryReader(repo).reverseIter);
+}
+
+void printCommitHistory(Term t, string repo, string commit)
+{
+	t.put("Job history for repository ", repo, " commit ", commit, ":\n");
+	t.printHistory(getCommitHistoryReader(repo, commit).reverseIter);
+}
+
+void printHistory(R)(Term t, R jobs)
+{
+	size_t count;
 	foreach (ref job; jobs)
+	{
 		if (job is Job.parseErrorValue)
 			t.printJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
 		else
 			t.printJobSummary(getJobResult(job.jobID));
+		count++;
+	}
+	t.put(count, " history ", count == 1 ? "entry" : "entries", " on record.\n");
 }
 
 auto formatted(string fmt, T...)(auto ref T values)

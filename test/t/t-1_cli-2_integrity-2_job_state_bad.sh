@@ -16,4 +16,4 @@ jobid=$(cat jobid)
 echo garbage > cirun-data/jobs/*/*/job.json
 
 "$cirun" status repo 2>&1 | grep -F 'Status: corrupted (Expected {, got g)'
-"$cirun" log 2>&1 | grep -F "corrupted $jobid"
+"$cirun" history 2>&1 | grep -F "corrupted $jobid"

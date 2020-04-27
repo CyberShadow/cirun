@@ -16,4 +16,4 @@ jobid=$(cat jobid)
 rm -rf cirun-data/jobs
 
 "$cirun" status repo 2>&1 | grep -F 'Status: (no data)'
-"$cirun" log 2>&1 | grep -F "(no data) $jobid"
+"$cirun" history 2>&1 | grep -F "(no data) $jobid"

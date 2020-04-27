@@ -15,4 +15,4 @@ jobid=$(cat jobid)
 
 echo garbage >> cirun-data/history.json
 
-"$cirun" log 2>&1 | grep -F 'corrupted (corrupted global history entry)'
+"$cirun" history 2>&1 | grep -F 'corrupted (corrupted global history entry)'
