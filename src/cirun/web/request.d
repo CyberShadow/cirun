@@ -95,7 +95,6 @@ void handleRequest(
 				(pathParts.length >= 3).httpEnforce(HttpStatusCode.NotFound);
 				(pathParts[1] == staticCacheKey).httpEnforce(HttpStatusCode.NotFound);
 				response.serveStatic(pathParts[2..$].join("/"));
-				response.cacheForever();
 				break;
 			case "favicon.ico":
 				response.headers["Location"] = "static/" ~ staticCacheKey ~ "/favicon.svg";

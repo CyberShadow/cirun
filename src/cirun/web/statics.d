@@ -25,18 +25,27 @@ import cirun.web.common;
 
 void serveStatic(HttpResponseEx response, string path)
 {
-	alias staticFiles = AliasSeq!("style.css", "favicon.svg");
-	switch (path)
+	debug
 	{
-		foreach (fn; staticFiles)
+		import std.path : dirName, buildPath, dirSeparator;
+		response.serveFile(path, __FILE__.dirName.dirName.dirName.buildPath("web", "static") ~ dirSeparator);
+	}
+	else
+	{
+		response.cacheForever();
+		alias staticFiles = AliasSeq!("style.css", "favicon.svg");
+		switch (path)
 		{
-			case fn:
-				enum mimeType = guessMime(fn);
-				response.serveData(import("web/static/" ~ fn), mimeType);
-				return;
+			foreach (fn; staticFiles)
+			{
+				case fn:
+					enum mimeType = guessMime(fn);
+					response.serveData(import("web/static/" ~ fn), mimeType);
+					return;
+			}
+			default:
+				throw new HttpException(HttpStatusCode.NotFound);
 		}
-		default:
-			throw new HttpException(HttpStatusCode.NotFound);
 	}
 }
 
