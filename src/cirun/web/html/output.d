@@ -1,5 +1,5 @@
 /**
- * HTML webpage generation.
+ * HTML output utility class.
  *
  * License:
  *   This Source Code Form is subject to the terms of
@@ -11,25 +11,13 @@
  *   Vladimir Panteleev <vladimir@thecybershadow.net>
  */
 
-module cirun.web.html;
+module cirun.web.html.output;
 
-import std.algorithm.iteration;
-import std.algorithm.sorting;
-import std.array;
 import std.conv;
-import std.range;
 
-import ae.net.http.responseex;
 import ae.sys.term;
 import ae.utils.appender;
 import ae.utils.xml.entities;
-
-import cirun.ci.job;
-import cirun.cli.term;
-import cirun.common.state;
-
-enum minimalPageTemplate = `<?content?>`;
-enum pageTemplate = import("web/page-template.html");
 
 class HTMLTerm : Term
 {
@@ -89,26 +77,4 @@ protected:
 
 private:
 	bool inSpan;
-}
-
-void serveIndexPage(HttpResponseEx response)
-{
-	auto t = HTMLTerm.getInstance();
-
-	auto results = getGlobalState().updateJobs();
-	t.tag(`pre`, {
-		t.put("Jobs: ");
-		foreach (g; results.map!(result => result.state.status).array.sort.group)
-			t.put(t.fg(jobStatusColor(g[0])), g[1], t.none, " ", g[0], ", ");
-		t.put(results.length, " total\n");
-
-		foreach (result; results)
-			t.printJobSummary(result);
-
-		enum numHistoryEntries = 10;
-		t.put("\nLast ", numHistoryEntries, " jobs:\n");
-		t.printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
-	});
-
-	response.writePageContents("Status", cast(string)t.buffer.get);
 }

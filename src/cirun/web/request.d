@@ -25,7 +25,7 @@ import ae.utils.array;
 
 import cirun.common.config;
 import cirun.web.common;
-import cirun.web.html;
+import cirun.web.html.pages;
 import cirun.web.statics;
 import cirun.web.webhook;
 
