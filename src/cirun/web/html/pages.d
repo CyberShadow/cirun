@@ -31,9 +31,6 @@ import cirun.cli.term;
 import cirun.common.state;
 import cirun.web.html.output;
 
-enum minimalPageTemplate = `<?content?>`;
-enum pageTemplate = import("web/page-template.html");
-
 void serveIndexPage(HttpResponseEx response)
 {
 	auto t = HTMLTerm.getInstance();

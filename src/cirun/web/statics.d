@@ -13,7 +13,9 @@
 
 module cirun.web.statics;
 
+import std.file;
 import std.meta;
+import std.path : dirName, buildPath, dirSeparator;
 
 import ae.net.http.responseex;
 import ae.utils.mime;
@@ -23,11 +25,16 @@ import ae.utils.time.parse;
 
 import cirun.web.common;
 
+enum minimalPageTemplate = `<?content?>`;
+debug
+	@property string pageTemplate() { return __FILE__.dirName.dirName.dirName.buildPath("web", "page-template.html").readText; }
+else
+	enum pageTemplate = import("web/page-template.html");
+
 void serveStatic(HttpResponseEx response, string path)
 {
 	debug
 	{
-		import std.path : dirName, buildPath, dirSeparator;
 		response.serveFile(path, __FILE__.dirName.dirName.dirName.buildPath("web", "static") ~ dirSeparator);
 	}
 	else
