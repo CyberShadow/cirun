@@ -50,6 +50,7 @@ JobResult needJob(ref JobSpec spec, string retestID, bool wait)
 	JobResult result;
 	getCommitHistoryPath(spec.repo, spec.commit).ensurePathExists();
 	{
+		auto repoHistoryWriter = getRepoHistoryWriter(spec.repo);
 		auto commitHistoryWriter = getCommitHistoryWriter(spec.repo, spec.commit);
 		auto commitHistoryReader = getCommitHistoryReader(spec.repo, spec.commit);
 		{
@@ -59,7 +60,9 @@ JobResult needJob(ref JobSpec spec, string retestID, bool wait)
 		}
 
 		result = queueJob(spec);
-		commitHistoryWriter.put(Job(spec, result.jobID));
+		auto job = Job(spec, result.jobID);
+		commitHistoryWriter.put(job);
+		repoHistoryWriter.put(job);
 	}
 
 	if (wait)

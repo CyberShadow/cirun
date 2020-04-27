@@ -58,6 +58,11 @@ alias HistoryEntry = Job; /// Global/repo/commit history entry (append-only)
 auto getGlobalHistoryWriter() { return LogWriter!HistoryEntry(getGlobalHistoryPath()); } /// ditto
 auto getGlobalHistoryReader() { return LogReader!HistoryEntry(getGlobalHistoryPath()); } /// ditto
 
+// Repository
+
+auto getRepoHistoryWriter(string repo) { return LogWriter!HistoryEntry(getRepoHistoryPath(repo)); } /// ditto
+auto getRepoHistoryReader(string repo) { return LogReader!HistoryEntry(getRepoHistoryPath(repo)); } /// ditto
+
 // Commit
 
 auto getCommitHistoryWriter(string repo, string commit) { return LogWriter!HistoryEntry(getCommitHistoryPath(repo, commit)); } /// ditto

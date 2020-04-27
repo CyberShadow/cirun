@@ -64,6 +64,9 @@ string getRepoDir(Root root, string repo)
 	return getRoot(root).buildPath("repos", repo.replace("/", dirSeparator));
 }
 
+alias getRepoHistoryPath = (string repo) =>
+	getRepoDir(Root.data, repo).buildPath("history.json");
+
 string getCommitDir(Root root, string repo, string commit)
 {
 	enforce(commit.isCommitID(), "Invalid commit SHA-1");
