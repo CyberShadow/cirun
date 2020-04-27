@@ -63,7 +63,7 @@ h1 {
 .job-box.status-queued    { border-color: #dc0; }
 .job-box.status-starting  { border-color: #dc0; }
 .job-box.status-running   { border-color: #dc0; }
-.job-box.status-success   { border-color: #0e0; }
+.job-box.status-success   { border-color: #0c0; }
 .job-box.status-failure   { border-color: #f00; }
 .job-box.status-errored   { border-color: #f00; }
 .job-box.status-cancelled { border-color: #aaa; }

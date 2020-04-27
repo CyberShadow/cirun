@@ -47,7 +47,7 @@
   
   <!-- status: success -->
   <g transform="translate(16 16)">
-    <path d="M 14 2 L 8 12 L 2 8" stroke-width="3" stroke="#0e0" fill="none"/>
+    <path d="M 14 2 L 8 12 L 2 8" stroke-width="3" stroke="#0c0" fill="none"/>
   </g>
   
   <!-- status: failure -->
