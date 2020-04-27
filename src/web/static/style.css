@@ -18,7 +18,8 @@ h1 {
 	background-image: url(icons.svg);
 	background-repeat: no-repeat;
 	display: inline-block;
-	vertical-align: text-bottom;
+	vertical-align: top;
+	margin-top: 1px;
 	margin-right: 0.5em;
 }
 
@@ -41,12 +42,18 @@ h1 {
 	border-width: 1px 1px 1px 10px;
 	border-style: solid;
 	display: table;
+	table-layout: fixed;
 	width: 100%;
 	margin-bottom: 5px;
 }
 .job-box > div {
 	display: table-cell;
+	white-space: pre;
+	overflow: hidden;
 }
+.job-box > div:nth-child(1) { width: 50%; }
+.job-box > div:nth-child(2) { width: 27%; }
+
 .job-box > div > div {
 	margin: 5px;
 }
