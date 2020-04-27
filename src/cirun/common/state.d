@@ -53,19 +53,15 @@ auto getGlobalState() /// ditto
 	return Persistent!GlobalState(getGlobalStatePath());
 }
 
-alias GlobalHistoryEntry = Job; /// Global history entry (append-only)
+alias HistoryEntry = Job; /// Global/repo/commit history entry (append-only)
 
-auto getGlobalHistoryWriter() { return LogWriter!GlobalHistoryEntry(getGlobalHistoryPath()); } /// ditto
-auto getGlobalHistoryReader() { return LogReader!GlobalHistoryEntry(getGlobalHistoryPath()); } /// ditto
+auto getGlobalHistoryWriter() { return LogWriter!HistoryEntry(getGlobalHistoryPath()); } /// ditto
+auto getGlobalHistoryReader() { return LogReader!HistoryEntry(getGlobalHistoryPath()); } /// ditto
 
 // Commit
 
-struct CommitState /// Persistent per-commit state
-{
-	string lastJobID;
-}
-
-auto getCommitState(string repo, string commit) { return Persistent!CommitState(getCommitStatePath(repo, commit)); } /// ditto
+auto getCommitHistoryWriter(string repo, string commit) { return LogWriter!HistoryEntry(getCommitHistoryPath(repo, commit)); } /// ditto
+auto getCommitHistoryReader(string repo, string commit) { return LogReader!HistoryEntry(getCommitHistoryPath(repo, commit)); } /// ditto
 
 // Job
 

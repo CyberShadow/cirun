@@ -70,8 +70,8 @@ string getCommitDir(Root root, string repo, string commit)
 	return getRepoDir(root, repo).buildPath(commit[0..2], commit[4..$]);
 }
 
-alias getCommitStatePath = (string repo, string commit) =>
-	getCommitDir(Root.data, repo, commit).buildPath("commit.json");
+alias getCommitHistoryPath = (string repo, string commit) =>
+	getCommitDir(Root.data, repo, commit).buildPath("history.json");
 
 string getJobDir(Root root, string jobID)
 {

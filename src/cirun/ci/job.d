@@ -14,6 +14,7 @@
 module cirun.ci.job;
 
 import std.algorithm.comparison;
+import std.algorithm.iteration;
 import std.algorithm.searching;
 import std.conv;
 import std.datetime.systime;
@@ -46,14 +47,20 @@ struct JobResult
 /// retestID, start a new job.
 JobResult needJob(ref JobSpec spec, string retestID, bool wait)
 {
-	getCommitStatePath(spec.repo, spec.commit).ensurePathExists();
+	JobResult result;
+	getCommitHistoryPath(spec.repo, spec.commit).ensurePathExists();
 	{
-		auto commitState = getCommitState(spec.repo, spec.commit);
-		if (commitState.value.lastJobID && (retestID is null || retestID != commitState.value.lastJobID))
-			return getJobResult(commitState.value.lastJobID);
-	}
+		auto commitHistoryWriter = getCommitHistoryWriter(spec.repo, spec.commit);
+		auto commitHistoryReader = getCommitHistoryReader(spec.repo, spec.commit);
+		{
+			auto commitHistory = commitHistoryReader.reverseIter().filter!(e => e.jobID);
+			if (!commitHistory.empty && (retestID is null || retestID != commitHistory.front.jobID))
+				return getJobResult(commitHistory.front.jobID);
+		}
 
-	auto result = queueJob(spec);
+		result = queueJob(spec);
+		commitHistoryWriter.put(Job(spec, result.jobID));
+	}
 
 	if (wait)
 	{
@@ -89,16 +96,12 @@ private JobResult queueJob(ref JobSpec spec)
 
 	auto globalState = getGlobalState();
 	{
-		auto commitState = getCommitState(spec.repo, spec.commit);
-
 		jobID = allocateJobID();
 		{
 			auto jobState = getJobState(jobID);
 			jobState.value.spec = spec;
 			jobState.value.status = JobStatus.queued;
 		}
-
-		commitState.value.lastJobID = jobID;
 	}
 
 	auto job = Job(spec, jobID);

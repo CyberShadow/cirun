@@ -101,6 +101,7 @@ struct LogWriter(T)
 	this(string fileName)
 	{
 		f = openFile(fileName, "ab");
+		f.lock();
 		f.write('\n'); // Start a new line in case the previous record was incompletely written
 	}
 
