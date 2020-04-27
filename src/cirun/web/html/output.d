@@ -32,19 +32,28 @@ class HTMLTerm : Term
 		return instance;
 	}
 
-	void putHTML(in char[] s)
+	void tag(string tag, string[string] attributes = null)
 	{
 		flush();
-		buffer.put(s);
+		buffer.put(`<`, tag);
+		putAttributes(attributes);
+		buffer.put(`/>`);
 	}
 
-	void tag(string tag, void delegate() inner)
+	void tag(string tag, string[string] attributes, scope void delegate() inner)
 	{
 		flush();
-		buffer.put(`<`, tag, `>`);
+		buffer.put('<', tag);
+		putAttributes(attributes);
+		buffer.put('>');
 		inner();
 		flush();
 		buffer.put(`</`, tag, `>`);
+	}
+
+	void tag(string tag, scope void delegate() inner)
+	{
+		this.tag(tag, null, inner);
 	}
 
 	void flush()
@@ -53,6 +62,23 @@ class HTMLTerm : Term
 		{
 			buffer.put(`</span>`);
 			inSpan = false;
+		}
+	}
+
+private:
+	void putHTML(in char[] s)
+	{
+		flush();
+		buffer.put(s);
+	}
+
+	void putAttributes(string[string] attributes)
+	{
+		foreach (name, value; attributes)
+		{
+			buffer.put(' ', name, `="`);
+			putText(value);
+			buffer.put('"');
 		}
 	}
 

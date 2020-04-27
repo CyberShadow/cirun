@@ -36,19 +36,88 @@ void serveIndexPage(HttpResponseEx response)
 	auto t = HTMLTerm.getInstance();
 
 	auto results = getGlobalState().updateJobs();
-	t.tag(`pre`, {
-		t.put("Jobs: ");
+	t.tag(`p`, {
+		t.put("Active jobs: ");
 		foreach (g; results.map!(result => result.state.status).array.sort.group)
-			t.put(t.fg(jobStatusColor(g[0])), g[1], t.none, " ", g[0], ", ");
-		t.put(results.length, " total\n");
-
-		foreach (result; results)
-			t.printJobSummary(result);
-
-		enum numHistoryEntries = 10;
-		t.put("\nLast ", numHistoryEntries, " jobs:\n");
-		t.printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
+		{
+			t.tag(`b`, { t.put(t.fg(jobStatusColor(g[0])), g[1]); });
+			t.put(" ", g[0], ", ");
+		}
+		t.tag(`b`, { t.put(results.length); });
+		t.put(" total");
+		t.tag(`br`);
 	});
 
+	foreach (ref result; results)
+		t.putJobSummary(result);
+
+	t.tag(`h2`, { t.put("History"); });
+
+	enum numHistoryEntries = 10;
+	t.tag(`p`, { t.put("Last ", numHistoryEntries, " jobs:"); });
+	t.printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
+
 	response.writePageContents("Status", cast(string)t.buffer.get);
+}
+
+void printGlobalHistory(R)(HTMLTerm t, R jobs)
+{
+	foreach (ref job; jobs)
+		if (job is Job.parseErrorValue)
+			t.putJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
+		else
+			t.putJobSummary(getJobResult(job.jobID));
+}
+
+void putJobSummary(HTMLTerm t, JobResult result)
+{
+	t.tag(`div`, ["class" : "job-box status-" ~ result.state.status.text], {
+		t.tag(`div`, {
+			t.tag(`div`, ["class" : "repository"], {
+				t.tag(`div`, ["class" : "icon"], {});
+				if (result.state.spec.repo)
+					t.put(result.state.spec.repo); // TODO: Link?
+				else
+					t.put("-");
+			});
+			t.tag(`div`, ["class" : "commit"], {
+				t.tag(`div`, ["class" : "icon"], {});
+				if (result.state.spec.commit)
+					t.put(result.state.spec.commit); // TODO: Link?
+				else
+					t.put("-");
+			});
+		});
+
+		t.tag(`div`, {
+			t.tag(`div`, ["class" : "job"], {
+				t.tag(`div`, ["class" : "icon"], {});
+				if (result.jobID)
+					t.put(result.jobID); // TODO: Link
+				else
+					t.put("-");
+			});
+			t.tag(`div`, ["class" : "status-" ~ result.state.status.text], {
+				t.tag(`div`, ["class" : "icon"], {});
+				t.put(t.fg(jobStatusColor(result.state.status)), result.state.status); // TODO: Link to bottom of log
+			});
+		});
+
+		t.tag(`div`, {
+			t.tag(`div`, ["class" : "start-time"], {
+				t.tag(`div`, ["class" : "icon"], {});
+				if (result.state.startTime)
+					t.put(result.state.startTime.SysTime.formatTime!"Y-m-d H:i:s");
+				else
+					t.put('-');
+			});
+			t.tag(`div`, ["class" : "duration"], {
+				t.tag(`div`, ["class" : "icon"], {});
+				if (result.state.finishTime)
+					t.put((result.state.finishTime - result.state.startTime).stdDur.DurationFmt);
+				else
+					t.put('-');
+			});
+		});
+	});
 }

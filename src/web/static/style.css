@@ -4,7 +4,59 @@ body {
 	margin: 80px auto;
 }
 
-h1 {
-	font-size: 36pt;
+h1, h2 {
 	border-bottom: 1px solid #ddd;
 }
+
+h1 {
+	font-size: 36pt;
+}
+
+.icon {
+	width: 16px;
+	height: 16px;
+	background-image: url(icons.svg);
+	background-repeat: no-repeat;
+	display: inline-block;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+.status-none       > .icon { background-position:   0     0  ; }
+.status-corrupted  > .icon { background-position: -16px   0  ; }
+.status-queued     > .icon { background-position: -32px   0  ; }
+.status-starting   > .icon { background-position: -48px   0  ; }
+.status-running    > .icon { background-position:   0   -16px; }
+.status-success    > .icon { background-position: -16px -16px; }
+.status-failure    > .icon { background-position: -32px -16px; }
+.status-errored    > .icon { background-position: -48px -16px; }
+.status-cancelled  > .icon { background-position:   0   -32px; }
+.repository        > .icon { background-position: -16px -32px; }
+.commit            > .icon { background-position: -32px -32px; }
+.job               > .icon { background-position: -48px -32px; }
+.start-time        > .icon { background-position:   0   -48px; }
+.duration          > .icon { background-position: -16px -48px; }
+
+.job-box {
+	border-width: 1px 1px 1px 10px;
+	border-style: solid;
+	display: table;
+	width: 100%;
+	margin-bottom: 5px;
+}
+.job-box > div {
+	display: table-cell;
+}
+.job-box > div > div {
+	margin: 5px;
+}
+
+.job-box.status-none      { border-color: #aaa; }
+.job-box.status-corrupted { border-color: #f00; }
+.job-box.status-queued    { border-color: #dc0; }
+.job-box.status-starting  { border-color: #dc0; }
+.job-box.status-running   { border-color: #dc0; }
+.job-box.status-success   { border-color: #0e0; }
+.job-box.status-failure   { border-color: #f00; }
+.job-box.status-errored   { border-color: #f00; }
+.job-box.status-cancelled { border-color: #aaa; }

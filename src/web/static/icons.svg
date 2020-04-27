@@ -1,0 +1,108 @@
+<svg width="64" height="64"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <defs>
+    <mask id="q">
+      <circle cx="8" cy="8" r="8" fill="white"/>
+      <circle cx="8" cy="13" r="1"/>
+      <circle cx="8" cy="9" r="1"/>
+      <path stroke="black" fill="none" stroke-width="2" d="M 8 9 a 3 3 270 1 0 -3 -3 "/>
+    </mask>
+    <mask id="e">
+      <path d="M 8 0 L 0 16 h 16 z" fill="white"/>
+      <circle cx="8" cy="13" r="1"/>
+      <path stroke="black" fill="none" stroke-width="2" d="M 8 6 v 5"/>
+    </mask>
+  </defs>
+  
+  <!-- status: none -->
+  <g>
+    <path d="M 0 0 v 16 h 16 v -16 z" mask="url(#q)" fill="#aaa"/>
+  </g>
+  
+  <!-- status: corrupted -->
+  <g transform="translate(16 0)">
+    <path d="M 8 0 L 0 16 h 16 z
+	     M 9 4 L 8 9 L 11 9 L 7 16 L 8 11 L 5 11 z" fill="red"/>
+  </g>
+  
+  <!-- status: queued -->
+  <g transform="translate(32 0)">
+    <path d="M 0 0 a 8 8 180 0 0 16 0 M 2 1 h 12 z
+             M 12 2 l -4 4 l -4 -4 z
+             M 8 11 l -5 5 h 10 z" fill="#dc0"/>
+    <path d="M 1 16 a 7 7 180 0 1 14 0 M 2 15 h 12" stroke-width="2" stroke="#dc0" fill="none"/>
+  </g>
+  
+  <!-- status: starting -->
+  <g transform="translate(48 0)">
+    <path d="M 2 6 h 6 v -4 l 6 6 l -6 6 v -4 h -6 z" fill="#aaa"/>
+  </g>
+  
+  <!-- status: running -->
+  <g transform="translate(0 16)">
+    <path d="M 2 6 h 6 v -4 l 6 6 l -6 6 v -4 h -6 z" fill="#dc0"/>
+  </g>
+  
+  <!-- status: success -->
+  <g transform="translate(16 16)">
+    <path d="M 14 2 L 8 12 L 2 8" stroke-width="3" stroke="#0e0" fill="none"/>
+  </g>
+  
+  <!-- status: failure -->
+  <g transform="translate(32 16)">
+    <path d="M 2 2 L 14 14 M 14 2 L 2 14" stroke-width="3" stroke="#f00" fill="none"/>
+  </g>
+  
+  <!-- status: error -->
+  <g transform="translate(48 16)">
+    <path d="M 0 0 v 16 h 16 v -16 z" fill="red" mask="url(#e)"/>
+  </g>
+  
+  <!-- status: cancelled -->
+  <g transform="translate(0 32)">
+    <circle fill="none" stroke="#aaa" stroke-width="2" cx="8" cy="8" r="7"/>
+    <path fill="none" stroke="#aaa" stroke-width="2" d="M 3 13 L 13 3" />
+  </g>
+  
+  <!-- object: repository -->
+  <g transform="translate(16 32)">
+    <rect fill="none" stroke="black" stroke-width="1" x="2.5" y="0.5" width="11" rx="1" height="13"/>
+    <path d="M 3 1 h 2 v 10 h -2 z
+             M 5 12 h 3 v 4 l -1.5 -1.5 l -1.5 1.5 z
+             "/>
+    <path d="M 6.5 2 v 8" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1"/>
+    <path d="M 2 10.5 h 12" fill="none" stroke="black" stroke-width="1"/>
+  </g>
+  
+  <!-- object: commit -->
+  <g transform="translate(32 32)">
+    <circle fill="none" stroke="black" stroke-width="2" cx="8" cy="8" r="4"/>
+    <path d="M 8 0 v 4 M 8 12 v 4" fill="none" stroke="black" stroke-width="2"/>
+  </g>
+  
+  <!-- object: job -->
+  <g transform="translate(48 32)">
+    <path d="M 0 0 v 16 h 16 v -16 z M 4 6 h 4 v -3 l 5 5 l -5 5 v -3 h -4 z"/>
+  </g>
+  
+  <!-- object: calendar (start time) -->
+  <g transform="translate(0 48)">
+    <path d="M 0.5 0.5 h 15 v 15 h -15 z
+	     M 0.5 3.5 h 15
+	     M 3.5 8.5 l 2 -2 v 7 h -2 h 4
+	     M 9   8   a 1.5 1.5 270 1 1 1.5 1.5 a 2 2 270 1 1 -2 2
+	     " fill="none" stroke="black" stroke-width="1"/>
+    <path d="M 0 4.5 h 15" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1"/>
+  </g>
+  
+  <!-- object: stopwatch (duration) -->
+  <g transform="translate(16 48)">
+    <circle cx="7.5" cy="8.5" r="6.75" fill="none" stroke="black" stroke-width="1.5"/>
+    <circle cx="7.5" cy="8.5" r="5.5" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1"/>
+    <path d="M 6 0 h 3 v 2 h -3 z
+	     M 14 7 v 3 h 2 v -3 z" />
+    <path d="M 7.5 4.5 v 4 l 3.5 2.5" fill="none" stroke="black" stroke-width="1"/>
+  </g>
+</svg>
