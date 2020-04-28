@@ -196,6 +196,14 @@ JobResult getJobResult(string jobID)
 	return JobResult(jobID, jobState.value);
 }
 
+JobResult getJobResult(HistoryEntry job)
+{
+	if (job is Job.parseErrorValue)
+		return JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted history entry)"));
+	else
+		return getJobResult(job.jobID);
+}
+
 /// Clean up finished jobs and start queued jobs.
 JobResult[] updateJobs(Persistent!GlobalState globalState)
 {
