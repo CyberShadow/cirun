@@ -85,6 +85,7 @@ void handleRequest(
 
 		context.response.pageTemplate = pageTemplate; // Safe to use the full template past this point
 		context.path = pathParts;
+		context.response.pageTokens["root"] = context.relPath("");
 		context.response.pageTokens["static-root"] = context.relPath("static", staticCacheKey, "");
 
 		switch (pathParts[0])
