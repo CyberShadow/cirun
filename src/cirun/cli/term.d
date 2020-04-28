@@ -76,10 +76,7 @@ void printHistory(R)(Term t, R jobs)
 	size_t count;
 	foreach (ref job; jobs)
 	{
-		if (job is Job.parseErrorValue)
-			t.printJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
-		else
-			t.printJobSummary(getJobResult(job.jobID));
+		t.printJobSummary(job.getJobResult());
 		count++;
 	}
 	t.put(count, " history ", count == 1 ? "entry" : "entries", " on record.\n");
