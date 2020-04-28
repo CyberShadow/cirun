@@ -68,6 +68,8 @@ h1 > div {
 	display: table;
 	table-layout: fixed;
 	margin-bottom: 5px;
+	width: 100%;
+	box-sizing: border-box;
 }
 .job-box > div {
 	display: table-cell;
