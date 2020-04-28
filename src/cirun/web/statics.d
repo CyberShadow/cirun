@@ -13,6 +13,7 @@
 
 module cirun.web.statics;
 
+import std.array : replace;
 import std.file;
 import std.meta;
 import std.path : dirName, buildPath, dirSeparator;
@@ -40,12 +41,12 @@ void serveStatic(ref HttpContext context, string path)
 	else
 	{
 		context.response.cacheForever();
-		alias staticFiles = AliasSeq!("style.css", "favicon.svg");
+		alias staticFiles = AliasSeq!("style.css", "favicon.svg", "icons.min.svg");
 		switch (path)
 		{
 			foreach (fn; staticFiles)
 			{
-				case fn:
+				case fn.replace(".min.", "."):
 					enum mimeType = guessMime(fn);
 					context.response.serveData(import("web/static/" ~ fn), mimeType);
 					return;
