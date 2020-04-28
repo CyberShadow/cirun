@@ -4,6 +4,14 @@ body {
 	margin: 80px auto;
 }
 
+a {
+	text-decoration: none;
+	color: inherit;
+}
+a:hover {
+	text-decoration: underline;
+}
+
 h1, h2 {
 	border-bottom: 1px solid #ddd;
 }
@@ -51,7 +59,7 @@ h1 > div {
 .repository        > .icon { background-position: -16px -32px; }
 .commit            > .icon { background-position: -32px -32px; }
 .job               > .icon { background-position: -48px -32px; }
-.start-time        > .icon { background-position:   0   -48px; }
+.date              > .icon { background-position:   0   -48px; }
 .duration          > .icon { background-position: -16px -48px; }
 
 .job-box {
@@ -59,7 +67,6 @@ h1 > div {
 	border-style: solid;
 	display: table;
 	table-layout: fixed;
-	width: 100%;
 	margin-bottom: 5px;
 }
 .job-box > div {
@@ -83,3 +90,23 @@ h1 > div {
 .job-box.status-failure   { border-color: #f00; }
 .job-box.status-errored   { border-color: #f00; }
 .job-box.status-cancelled { border-color: #aaa; }
+
+a.page-next { display: block; float: right; }
+a.page-next::after { content: " »"; }
+
+a.page-prev { display: block; float: left; }
+a.page-prev::before { content: "« "; }
+
+.job-box.details {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 5px;
+}
+
+.job-box.details > table > tbody > tr > td {
+	padding: 2.5px 5px;
+}
+
+.job-box.details > table > tbody > tr > td:nth-child(1) {
+	text-align: right;
+}

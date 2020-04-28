@@ -15,6 +15,7 @@ module cirun.web.request;
 
 import std.algorithm.searching;
 import std.array;
+import std.conv;
 import std.exception;
 
 import ae.net.http.common;
@@ -90,8 +91,38 @@ void handleRequest(
 		{
 			case "":
 				(pathParts.length == 1).httpEnforce(HttpStatusCode.NotFound);
-				(request.method == "GET").httpEnforce(HttpStatusCode.MethodNotAllowed);
 				context.serveIndexPage();
+				break;
+			case "repo":
+				(pathParts.length > 2 && pathParts[$-1] == "").httpEnforce(HttpStatusCode.NotFound);
+				context.serveRepoPage(pathParts[1..$-1].join("/"));
+				break;
+			case "commit":
+				(pathParts.length > 3 && pathParts[$-1] == "").httpEnforce(HttpStatusCode.NotFound);
+				context.serveCommitPage(pathParts[1..$-2].join("/"), pathParts[$-2]);
+				break;
+			case "job":
+				(pathParts.length == 3 && pathParts[$-1] == "").httpEnforce(HttpStatusCode.NotFound);
+				context.serveJobPage(pathParts[1]);
+				break;
+			case "history":
+				(pathParts.length > 1 && pathParts[$-1] == "").httpEnforce(HttpStatusCode.NotFound);
+				auto page = request.urlParameters.get("page", "0").to!size_t;
+				switch (pathParts[1])
+				{
+				case "":
+					(pathParts.length == 2).httpEnforce(HttpStatusCode.NotFound);
+					context.serveGlobalHistory(page);
+					break;
+				case "repo":
+					context.serveRepoHistory(pathParts[2..$-1].join("/"), page);
+					break;
+				case "commit":
+					context.serveCommitHistory(pathParts[2..$-2].join("/"), pathParts[$-2], page);
+					break;
+				default:
+					throw new HttpException(HttpStatusCode.NotFound);
+				}
 				break;
 			case "static":
 				(pathParts.length >= 3).httpEnforce(HttpStatusCode.NotFound);

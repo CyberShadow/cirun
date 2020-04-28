@@ -28,6 +28,7 @@ import ae.utils.xml.entities;
 
 import cirun.ci.job;
 import cirun.cli.term;
+import cirun.common.ids;
 import cirun.common.state;
 import cirun.web.common;
 import cirun.web.html.output;
@@ -50,75 +51,297 @@ void serveIndexPage(ref HttpContext context)
 	});
 
 	foreach (ref result; results)
-		t.putJobSummary(result);
+		t.putJobEntry(result);
 
-	t.tag(`h2`, { t.put("History"); });
-
-	enum numHistoryEntries = 10;
-	t.tag(`p`, { t.put("Last ", numHistoryEntries, " jobs:"); });
-	t.printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
+	t.putBriefHistory(getGlobalHistoryReader.reverseIter, []);
 
 	t.finish("Status");
 }
 
-void printGlobalHistory(R)(HTMLTerm t, R jobs)
+void serveRepoPage(ref HttpContext context, string repo)
 {
-	foreach (ref job; jobs)
-		if (job is Job.parseErrorValue)
-			t.putJobSummary(JobResult(null, JobState(JobSpec.init, JobStatus.corrupted, "(corrupted global history entry)")));
-		else
-			t.putJobSummary(getJobResult(job.jobID));
+	(repo.isRepoID).httpEnforce(HttpStatusCode.BadRequest);
+	auto t = HTMLTerm.getInstance(context);
+	auto history = getRepoHistoryReader(repo);
+	t.putLastJob(history.reverseIter);
+	t.putBriefHistory(history.reverseIter, ["repo"] ~ repo.split("/"));
+	t.finish("Repo " ~ repo);
 }
 
-void putJobSummary(HTMLTerm t, JobResult result)
+void serveCommitPage(ref HttpContext context, string repo, string commit)
 {
-	t.tag(`div`, ["class" : "job-box status-" ~ result.state.status.text], {
+	(repo.isRepoID && commit.isCommitID).httpEnforce(HttpStatusCode.BadRequest);
+	auto t = HTMLTerm.getInstance(context);
+	auto history = getCommitHistoryReader(repo, commit);
+	t.putLastJob(history.reverseIter);
+	t.putBriefHistory(history.reverseIter, ["commit"] ~ repo.split("/") ~ [commit]);
+	t.finish("Commit " ~ commit);
+}
+
+void serveJobPage(ref HttpContext context, string jobID)
+{
+	(jobID.isJobID).httpEnforce(HttpStatusCode.BadRequest);
+	auto t = HTMLTerm.getInstance(context);
+	auto result = getJobResult(jobID);
+	t.putJobDetails(result);
+	// TODO: job log
+	t.finish("Job " ~ jobID);
+}
+
+void serveGlobalHistory(ref HttpContext context, size_t page)
+{
+	auto t = HTMLTerm.getInstance(context);
+	t.putHistory(getGlobalHistoryReader.reverseIter, page, []);
+	t.finish("History");
+}
+
+void serveRepoHistory(ref HttpContext context, string repo, size_t page)
+{
+	(repo.isRepoID).httpEnforce(HttpStatusCode.BadRequest);
+	auto t = HTMLTerm.getInstance(context);
+	t.putHistory(getRepoHistoryReader(repo).reverseIter, page, ["repo"] ~ repo.split("/"));
+	t.finish(repo ~ " - History");
+}
+
+void serveCommitHistory(ref HttpContext context, string repo, string commit, size_t page)
+{
+	(repo.isRepoID && commit.isCommitID).httpEnforce(HttpStatusCode.BadRequest);
+	auto t = HTMLTerm.getInstance(context);
+	t.putHistory(getCommitHistoryReader(repo, commit).reverseIter, page, ["commit"] ~ repo.split("/") ~ [commit]);
+	t.finish(commit ~ " - History");
+}
+
+enum historyPageSize = 10;
+
+void putBriefHistory(R)(HTMLTerm t, R jobs, string[] object)
+{
+	t.tag(`h2`, { t.put("History"); });
+	t.putHistory(jobs, 0, object);
+}
+
+void putHistory(R)(HTMLTerm t, R jobs, size_t page, string[] object)
+{
+	size_t numEntries;
+	jobs = jobs.drop(page * historyPageSize);
+	if (jobs.empty && page > 0)
+		throw new HttpException(HttpStatusCode.NotFound);
+	while (!jobs.empty && numEntries < historyPageSize)
+	{
+		t.putJobEntry(jobs.front.getJobResult());
+		numEntries++;
+		jobs.popFront();
+	}
+	if (!numEntries)
+		t.tag(`p`, {
+			t.put(`No entries.`);
+		});
+	if (page > 0)
+		t.tag(`a`, [
+			"class" : "page-prev",
+			"href" : text(t.context.relPath(["history"] ~ object ~ [""]), "?page=", page - 1),
+		], { t.put("Newer"); });
+	if (!jobs.empty)
+		t.tag(`a`, [
+			"class" : "page-next",
+			"href" : text(t.context.relPath(["history"] ~ object ~ [""]), "?page=", page + 1),
+		], { t.put("Older"); });
+}
+
+void putJobEntry(HTMLTerm t, JobResult result)
+{
+	t.tag(`div`, ["class" : "job-box summary status-" ~ result.state.status.text], {
 		t.tag(`div`, {
-			t.tag(`div`, ["class" : "repository"], {
-				t.tag(`div`, ["class" : "icon"], {});
-				if (result.state.spec.repo)
-					t.put(result.state.spec.repo); // TODO: Link?
-				else
-					t.put("-");
-			});
-			t.tag(`div`, ["class" : "commit"], {
-				t.tag(`div`, ["class" : "icon"], {});
-				if (result.state.spec.commit)
-					t.put(result.state.spec.commit); // TODO: Link?
-				else
-					t.put("-");
-			});
+			t.putRepoID(result.state.spec);
+			t.putCommitID(result.state.spec);
 		});
 
 		t.tag(`div`, {
-			t.tag(`div`, ["class" : "job"], {
-				t.tag(`div`, ["class" : "icon"], {});
-				if (result.jobID)
-					t.put(result.jobID); // TODO: Link
-				else
-					t.put("-");
-			});
-			t.tag(`div`, ["class" : "status-" ~ result.state.status.text], {
-				t.tag(`div`, ["class" : "icon"], {});
-				t.put(t.fg(jobStatusColor(result.state.status)), result.state.status); // TODO: Link to bottom of log
-			});
+			t.putJobID(result.jobID);
+			t.putJobStatus!false(result.state);
 		});
 
 		t.tag(`div`, {
-			t.tag(`div`, ["class" : "start-time"], {
-				t.tag(`div`, ["class" : "icon"], {});
-				if (result.state.startTime)
-					t.put(result.state.startTime.SysTime.formatTime!"Y-m-d H:i:s");
-				else
-					t.put('-');
+			t.putDate!false(result.state.startTime);
+			t.putDuration(result.state.startTime, result.state.finishTime);
+		});
+	});
+}
+
+void putLastJob(R)(HTMLTerm t, R iter)
+{
+	if (iter.empty)
+		t.tag(`p`, {
+			t.put(`No jobs.`);
+		});
+	else
+		t.putJobDetails(iter.front.getJobResult());
+}
+
+void putJobDetails(HTMLTerm t, JobResult result)
+{
+	t.tag(`div`, ["class" : "job-box details status-" ~ result.state.status.text], {
+		t.tag(`table`, {
+			t.tag(`tr`, {
+				t.tag(`td`, { 
+					t.put(`Job:`);
+				});
+				t.tag(`td`, {
+					t.putJobID(result.jobID);
+				});
 			});
-			t.tag(`div`, ["class" : "duration"], {
-				t.tag(`div`, ["class" : "icon"], {});
-				if (result.state.finishTime)
-					t.put((result.state.finishTime - result.state.startTime).stdDur.DurationFmt);
-				else
-					t.put('-');
+			t.tag(`tr`, {
+				t.tag(`td`, { 
+					t.put(`Repository:`);
+				});
+				t.tag(`td`, {
+					t.putRepoID(result.state.spec);
+				});
+			});
+			t.tag(`tr`, {
+				t.tag(`td`, { 
+					t.put(`Commit:`);
+				});
+				t.tag(`td`, {
+					t.putCommitID(result.state.spec);
+				});
+			});
+			t.tag(`tr`, {
+				t.tag(`td`, { 
+					t.put(`Start time:`);
+				});
+				t.tag(`td`, {
+					t.putDate!true(result.state.startTime);
+				});
+			});
+			t.tag(`tr`, {
+				t.tag(`td`, { 
+					t.put(`Finish time:`);
+				});
+				t.tag(`td`, {
+					t.putDate!true(result.state.finishTime);
+				});
+			});
+			t.tag(`tr`, {
+				t.tag(`td`, { 
+					t.put(`Duration:`);
+				});
+				t.tag(`td`, {
+					t.putDuration(result.state.startTime, result.state.finishTime);
+				});
+			});
+			t.tag(`tr`, {
+				t.tag(`td`, { 
+					t.put(`Status:`);
+				});
+				t.tag(`td`, {
+					t.putJobStatus!true(result.state);
+				});
 			});
 		});
+	});
+}
+
+void putRepoID(HTMLTerm t, JobSpec spec)
+{
+	t.tag(`div`, ["class" : "repository"], {
+		t.tag(`div`, ["class" : "icon"], {});
+		if (spec.repo)
+		{
+			assert(spec.repo.isRepoID);
+			string[string] attrs;
+			attrs["href"] = t.context.relPath(["repo"] ~ spec.repo.split("/") ~ [""]);
+			if (spec.cloneURL)
+				attrs["title"] = "Cloned from " ~ spec.cloneURL;
+			t.tag(`a`, attrs, {
+				t.put(spec.repo);
+			});
+		}
+		else
+			t.put("-");
+	});
+}
+
+void putCommitID(HTMLTerm t, JobSpec spec)
+{
+	t.tag(`div`, ["class" : "commit"], {
+		t.tag(`div`, ["class" : "icon"], {});
+		if (spec.commit)
+		{
+			assert(spec.commit.isCommitID);
+			// TODO: commit description
+			t.tag(`a`, ["href" : t.context.relPath(["commit"] ~ spec.repo.split("/") ~ [spec.commit, ""])], {
+				t.put(spec.commit);
+			});
+		}
+		else
+			t.put("-");
+	});
+}
+
+void putJobID(HTMLTerm t, string jobID)
+{
+	t.tag(`div`, ["class" : "job"], {
+		t.tag(`div`, ["class" : "icon"], {});
+		if (jobID)
+		{
+			assert(jobID.isJobID);
+			t.tag(`a`, ["href" : t.context.relPath("job", jobID, "")], {
+				t.put(jobID);
+			});
+		}
+		else
+			t.put("-");
+	});
+}
+
+void putJobStatus(bool full)(HTMLTerm t, JobState state)
+{
+	t.tag(`div`, ["class" : "status-" ~ state.status.text], {
+		t.tag(`div`, ["class" : "icon"], {});
+		string[string] attrs;
+		static if (!full)
+			if (state.statusText)
+				attrs["title"] = state.statusText;
+		t.tag(`span`, attrs, {
+			t.put(t.fg(jobStatusColor(state.status)), state.status); // TODO: Link to bottom of log
+			static if (full)
+				if (state.statusText)
+					t.put(" (", state.statusText, ")");
+		});
+	});
+}
+
+void putDate(bool full)(HTMLTerm t, StdTime stdTime)
+{
+	t.tag(`div`, ["class" : "date"], {
+		t.tag(`div`, ["class" : "icon"], {});
+		if (stdTime)
+		{
+			auto time = stdTime.SysTime;
+			t.tag(`span`, ["title" : text(Clock.currTime - time, " ago")], {
+				static if (full)
+					t.put(time.formatTime!timeFormat);
+				else
+					t.put(time.formatTime!"Y-m-d H:i:s");
+			});
+		}
+		else
+			t.put('-');
+	});
+}
+
+void putDuration(HTMLTerm t, StdTime startTime, StdTime finishTime)
+{
+	t.tag(`div`, ["class" : "duration"], {
+		t.tag(`div`, ["class" : "icon"], {});
+		if (finishTime)
+		{
+			auto duration = (finishTime - startTime).stdDur;
+			t.tag(`span`, ["title" : text(duration)], {
+				t.put(duration.DurationFmt);
+			});
+		}
+		else
+			t.put('-');
 	});
 }
