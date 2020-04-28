@@ -66,9 +66,10 @@ void handleRequest(
 	  authenticated requests.
 	 */
 
-	auto response = new HttpResponseEx();
-	response.status = HttpStatusCode.OK;
-	response.pageTemplate = minimalPageTemplate;
+	HttpContext context;
+	context.response = new HttpResponseEx();
+	context.response.status = HttpStatusCode.OK;
+	context.response.pageTemplate = minimalPageTemplate;
 
 	try
 	{
@@ -77,35 +78,36 @@ void handleRequest(
 		auto pathParts = path.split1("/");
 
 		if ((serverConfig.username || serverConfig.password) &&
-			!response.authorize(request, (reqUser, reqPass) =>
+			!context.response.authorize(request, (reqUser, reqPass) =>
 				reqUser == serverConfig.username && reqPass == serverConfig.password))
-			return handleResponse(response);
+			return handleResponse(context.response);
 
-		response.pageTemplate = pageTemplate; // Safe to use the full template past this point
-		response.pageTokens["static-root"] = "../".replicate(pathParts.length - 1) ~ "static/" ~ staticCacheKey ~ "/";
+		context.response.pageTemplate = pageTemplate; // Safe to use the full template past this point
+		context.path = pathParts;
+		context.response.pageTokens["static-root"] = context.relPath("static", staticCacheKey, "");
 
 		switch (pathParts[0])
 		{
 			case "":
 				(pathParts.length == 1).httpEnforce(HttpStatusCode.NotFound);
 				(request.method == "GET").httpEnforce(HttpStatusCode.MethodNotAllowed);
-				response.serveIndexPage();
+				context.serveIndexPage();
 				break;
 			case "static":
 				(pathParts.length >= 3).httpEnforce(HttpStatusCode.NotFound);
 				(pathParts[1] == staticCacheKey).httpEnforce(HttpStatusCode.NotFound);
-				response.serveStatic(pathParts[2..$].join("/"));
+				context.serveStatic(pathParts[2..$].join("/"));
 				break;
 			case "favicon.ico":
-				response.headers["Location"] = "static/" ~ staticCacheKey ~ "/favicon.svg";
-				response.status = HttpStatusCode.Found;
+				context.response.headers["Location"] = "static/" ~ staticCacheKey ~ "/favicon.svg";
+				context.response.status = HttpStatusCode.Found;
 				break;
 			case "webhook":
 				(pathParts.length == 1).httpEnforce(HttpStatusCode.NotFound);
 				(request.method == "POST").httpEnforce(HttpStatusCode.MethodNotAllowed);
 				(request.headers.get("Content-Type", null) == "application/json").httpEnforce(HttpStatusCode.UnsupportedMediaType);
 				processWebhook(cast(string)request.data.joinToHeap());
-				response.serveText("OK");
+				context.response.serveText("OK");
 				break;
 
 			default:
@@ -113,11 +115,11 @@ void handleRequest(
 		}
 	}
 	catch (HttpException e)
-		response.writeError(e.status, e.msg);
+		context.response.writeError(e.status, e.msg);
 	catch (Exception e)
 	{
 		log(e.toString());
-		response.writeError(HttpStatusCode.InternalServerError, e.msg);
+		context.response.writeError(HttpStatusCode.InternalServerError, e.msg);
 	}
-	handleResponse(response);
+	handleResponse(context.response);
 }

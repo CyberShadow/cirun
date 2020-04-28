@@ -31,15 +31,15 @@ debug
 else
 	enum pageTemplate = import("web/page-template.html");
 
-void serveStatic(HttpResponseEx response, string path)
+void serveStatic(ref HttpContext context, string path)
 {
 	debug
 	{
-		response.serveFile(path, __FILE__.dirName.dirName.dirName.buildPath("web", "static") ~ dirSeparator);
+		context.response.serveFile(path, __FILE__.dirName.dirName.dirName.buildPath("web", "static") ~ dirSeparator);
 	}
 	else
 	{
-		response.cacheForever();
+		context.response.cacheForever();
 		alias staticFiles = AliasSeq!("style.css", "favicon.svg");
 		switch (path)
 		{
@@ -47,7 +47,7 @@ void serveStatic(HttpResponseEx response, string path)
 			{
 				case fn:
 					enum mimeType = guessMime(fn);
-					response.serveData(import("web/static/" ~ fn), mimeType);
+					context.response.serveData(import("web/static/" ~ fn), mimeType);
 					return;
 			}
 			default:

@@ -19,16 +19,19 @@ import ae.sys.term;
 import ae.utils.appender;
 import ae.utils.xml.entities;
 
+import cirun.web.common;
+
 class HTMLTerm : Term
 {
-	FastAppender!char buffer;
+	HttpContext* context;
 
-	static HTMLTerm getInstance()
+	static HTMLTerm getInstance(ref HttpContext context)
 	{
 		static HTMLTerm instance;
 		if (!instance)
 			instance = new HTMLTerm();
 		instance.buffer.clear();
+		instance.context = &context;
 		return instance;
 	}
 
@@ -65,7 +68,14 @@ class HTMLTerm : Term
 		}
 	}
 
+	void finish(string title)
+	{
+		context.response.writePageContents(title, cast(string)buffer.get);
+	}
+
 private:
+	FastAppender!char buffer;
+
 	void putHTML(in char[] s)
 	{
 		flush();

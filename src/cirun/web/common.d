@@ -13,9 +13,11 @@
 
 module cirun.web.common;
 
+import std.array;
 import std.exception;
 
 import ae.net.http.common;
+import ae.net.http.responseex;
 
 class HttpException : Exception
 {
@@ -31,4 +33,28 @@ class HttpException : Exception
 T httpEnforce(T)(T val, HttpStatusCode status, string msg = null)
 {
 	return enforce(val, new HttpException(status, msg));
+}
+
+struct HttpContext
+{
+	HttpResponseEx response;
+	string[] path;
+
+	string relPath(string[] target...)
+	{
+		assert(this.path.length > 0);
+
+		auto source = this.path;
+		while (source.length > 1 && target.length > 1 && source[0] == target[0])
+		{
+			source = source[1..$];
+			target = target[1..$];
+		}
+		while (source.length > 1)
+		{
+			source = source[1..$];
+			target = [".."] ~ target;
+		}
+		return target.join("/");
+	}
 }

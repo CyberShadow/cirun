@@ -29,11 +29,12 @@ import ae.utils.xml.entities;
 import cirun.ci.job;
 import cirun.cli.term;
 import cirun.common.state;
+import cirun.web.common;
 import cirun.web.html.output;
 
-void serveIndexPage(HttpResponseEx response)
+void serveIndexPage(ref HttpContext context)
 {
-	auto t = HTMLTerm.getInstance();
+	auto t = HTMLTerm.getInstance(context);
 
 	auto results = getGlobalState().updateJobs();
 	t.tag(`p`, {
@@ -57,7 +58,7 @@ void serveIndexPage(HttpResponseEx response)
 	t.tag(`p`, { t.put("Last ", numHistoryEntries, " jobs:"); });
 	t.printGlobalHistory(getGlobalHistoryReader.reverseIter.take(numHistoryEntries));
 
-	response.writePageContents("Status", cast(string)t.buffer.get);
+	t.finish("Status");
 }
 
 void printGlobalHistory(R)(HTMLTerm t, R jobs)
