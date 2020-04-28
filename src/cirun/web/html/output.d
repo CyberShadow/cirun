@@ -14,6 +14,7 @@
 module cirun.web.html.output;
 
 import std.conv;
+import std.datetime.systime;
 
 import ae.sys.term;
 import ae.utils.appender;
@@ -24,6 +25,7 @@ import cirun.web.common;
 class HTMLTerm : Term
 {
 	HttpContext* context;
+	SysTime startTime;
 
 	static HTMLTerm getInstance(ref HttpContext context)
 	{
@@ -32,6 +34,7 @@ class HTMLTerm : Term
 			instance = new HTMLTerm();
 		instance.buffer.clear();
 		instance.context = &context;
+		instance.startTime = Clock.currTime;
 		return instance;
 	}
 

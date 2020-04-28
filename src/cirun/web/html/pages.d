@@ -318,7 +318,7 @@ void putDate(bool full)(HTMLTerm t, StdTime stdTime)
 		if (stdTime)
 		{
 			auto time = stdTime.SysTime;
-			t.tag(`span`, ["title" : text(Clock.currTime - time, " ago")], {
+			t.tag(`span`, ["title" : text(t.startTime - time, " ago")], {
 				static if (full)
 					t.put(time.formatTime!timeFormat);
 				else
