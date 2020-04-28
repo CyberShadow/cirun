@@ -10,6 +10,22 @@ h1, h2 {
 
 h1 {
 	font-size: 36pt;
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+}
+h1 > div {
+	display: table-cell;
+}
+#title {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#banner {
+	display: table-cell;
+	width: 5ch;
+	text-align: right;
 }
 
 .icon {
