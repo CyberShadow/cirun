@@ -19,6 +19,8 @@ import std.range;
 import ae.net.http.common : HttpStatusCode;
 
 import cirun.ci.job;
+import cirun.cli.term : JobLogPrinter;
+import cirun.common.job.log;
 import cirun.common.state;
 import cirun.web.common;
 import cirun.web.html.bits;
@@ -151,5 +153,15 @@ void putJobDetails(HTMLTerm t, JobResult result)
 				});
 			});
 		});
+	});
+}
+
+void putJobLog(R)(HTMLTerm t, R iter)
+{
+	t.tag(`h2`, { t.put("Log"); });
+
+	t.tag(`pre`, ["class" : "job-log"], {
+		auto p = JobLogPrinter(t);
+		iter.preprocessLog!false(&p.printEntry);
 	});
 }

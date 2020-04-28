@@ -85,6 +85,8 @@ void serveJobPage(ref HttpContext context, string jobID)
 	auto t = HTMLTerm.getInstance(context);
 	auto result = getJobResult(jobID);
 	t.putJobDetails(result);
+	auto logReader = getJobLogReader(jobID);
+	t.putJobLog(logReader.iter);
 	// TODO: job log
 	t.finish("Job " ~ jobID);
 }

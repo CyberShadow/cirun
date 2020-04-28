@@ -112,3 +112,29 @@ a.page-prev::before { content: "« "; }
 .job-box.details > table > tbody > tr > td:nth-child(1) {
 	text-align: right;
 }
+
+.job-log {
+	background-color: black;
+	color: lightgray;
+	padding: 0.5em;
+	border-radius: 0.5em;
+	overflow-x: auto;
+}
+
+.color-black         { color: #000; }
+.color-blue          { color: #00B; }
+.color-green         { color: #0B0; }
+.color-cyan          { color: #0BB; }
+.color-red           { color: #B00; }
+.color-magenta       { color: #B0B; }
+.color-yellow        { color: #BB0; }
+.color-gray          { color: #BBB; }
+
+.color-darkGray      { color: #555; }
+.color-brightBlue    { color: #55F; }
+.color-brightGreen   { color: #5F5; }
+.color-brightCyan    { color: #5FF; }
+.color-brightRed     { color: #F55; }
+.color-brightMagenta { color: #F5F; }
+.color-brightYellow  { color: #FF5; }
+.color-white         { color: #FFF; }
