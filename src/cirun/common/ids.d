@@ -13,7 +13,8 @@
 
 module cirun.common.ids;
 
-import std.algorithm.searching;
+import std.algorithm.comparison : among;
+import std.algorithm.searching : all;
 import std.ascii;
 import std.string;
 
@@ -22,7 +23,14 @@ import ae.utils.time.common;
 bool isRepoID(string repo)
 {
 	auto parts = repo.split('/');
-	return parts.length && parts.all!(part => part.length && part != "." && part != "..");
+	return parts.length && parts.all!(part =>
+		part.length &&
+		part != "." &&
+		part != ".." &&
+		part.representation.all!((char c) =>
+			isAlphaNum(c) || c.among('-', '_', '.')
+		)
+	);
 }
 
 bool isCommitID(string commit)
