@@ -56,13 +56,14 @@ If a job for the given commit already exists, show information about that job in
 		Switch!"Wait until this job has finished." wait = false,
 		Switch!"Do not print the job status." quiet = false,
 		Option!(string, "Write job ID to the given file.", "PATH") jobIDFile = null,
+		Option!(string, "Start a new job if the last job for this commit is this job ID.", "JOB-ID") retest = null,
 	)
 	{
 		JobSpec spec;
 		spec.repo = repository;
 		spec.cloneURL = cloneURL;
 		spec.commit = commit;
-		auto result = needJob(spec, null, wait);
+		auto result = needJob(spec, retest, wait);
 		if (!quiet)
 			term.printJobResult(result);
 		if (jobIDFile)
