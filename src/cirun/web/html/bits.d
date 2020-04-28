@@ -80,14 +80,14 @@ void putJobID(HTMLTerm t, string jobID)
 
 void putJobStatus(bool full)(HTMLTerm t, JobState state)
 {
-	t.tag(`div`, ["class" : "status-" ~ state.status.text], {
+	t.tag(`div`, ["class" : "status status-" ~ state.status.text], {
 		t.tag(`div`, ["class" : "icon"], {});
 		string[string] attrs;
 		static if (!full)
 			if (state.statusText)
 				attrs["title"] = state.statusText;
 		t.tag(`span`, attrs, {
-			t.put(t.fg(jobStatusColor(state.status)), jobStatusText(state.status)); // TODO: Link to bottom of log
+			t.put(jobStatusText(state.status)); // TODO: Link to bottom of log
 			static if (full)
 				if (state.statusText)
 					t.put(" (", state.statusText, ")");

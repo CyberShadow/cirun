@@ -83,6 +83,16 @@ h1 > div {
 	margin: 5px;
 }
 
+.status.status-none      { color: #aaa; }
+.status.status-corrupted { color: #f00; }
+.status.status-queued    { color: #dc0; }
+.status.status-starting  { color: #dc0; }
+.status.status-running   { color: #dc0; }
+.status.status-success   { color: #0c0; }
+.status.status-failure   { color: #f00; }
+.status.status-errored   { color: #f00; }
+.status.status-cancelled { color: #aaa; }
+
 .job-box.status-none      { border-color: #aaa; }
 .job-box.status-corrupted { border-color: #f00; }
 .job-box.status-queued    { border-color: #dc0; }
