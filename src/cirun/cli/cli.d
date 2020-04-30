@@ -34,6 +34,7 @@ import cirun.common.ids;
 import cirun.common.job.format;
 import cirun.common.paths;
 import cirun.common.state;
+import cirun.web.cgi;
 import cirun.web.server;
 
 struct CLI
@@ -140,6 +141,15 @@ If a repository / commit is specified, show the job history for that object.`)
 		.installGitHook(kind, repositoryPath, repositoryName);
 	}
 
+	@(`Handle a CGI request.`)
+	void cgi(
+		Switch!"Emit response in Non-Parsed Headers mode." nph = false,
+		Option!(string, "The name of the server configuration section to use.\nDefaults to \"" ~ cgiDefaultServerName ~ "\".", "NAME") server = cgiDefaultServerName,
+	)
+	{
+		handleExplicitCGIRequest(server, nph);
+	}
+
 	// Internal
 	void jobRunner(string jobID)
 	{
@@ -179,6 +189,12 @@ string resolveJob(string id)
 
 void cliEntryPoint()
 {
+	if (!opts.action)
+	{
+		if (handleImplicitCGIRequest())
+			return;
+	}
+
 	static void usageFun(string usage)
 	{
 		import std.path : absolutePath, buildNormalizedPath;
