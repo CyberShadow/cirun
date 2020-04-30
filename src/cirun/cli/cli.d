@@ -40,12 +40,7 @@ import cirun.web.server;
 struct CLI
 {
 static:
-	@(`Start cirun as a server.`)
-	void server()
-	{
-		enforce(config.server.length, "No servers are configured.");
-		startServers();
-	}
+	// UI
 
 	@(`Request and show a job for the given repository commit.
 
@@ -129,6 +124,26 @@ If a repository / commit is specified, show the job history for that object.`)
 			term.printCommitHistory(repo, commit);
 	}
 
+	// Integration - Servers
+
+	@(`Start cirun as a server.`)
+	void server()
+	{
+		enforce(config.server.length, "No servers are configured.");
+		startServers();
+	}
+
+	@(`Handle a CGI request.`)
+	void cgi(
+		Switch!"Emit response in Non-Parsed Headers mode." nph = false,
+		Option!(string, "The name of the server configuration section to use.\nDefaults to \"" ~ cgiDefaultServerName ~ "\".", "NAME") server = cgiDefaultServerName,
+	)
+	{
+		handleExplicitCGIRequest(server, nph);
+	}
+
+	// Utility
+
 	@(`Install a git hook in the given repository which invokes cirun in response to specific actions.`)
 	void installGitHook(
 		Parameter!(string, "The kind of hook to install (post-commit, pre-push, or post-receive).") kind,
@@ -141,16 +156,8 @@ If a repository / commit is specified, show the job history for that object.`)
 		.installGitHook(kind, repositoryPath, repositoryName);
 	}
 
-	@(`Handle a CGI request.`)
-	void cgi(
-		Switch!"Emit response in Non-Parsed Headers mode." nph = false,
-		Option!(string, "The name of the server configuration section to use.\nDefaults to \"" ~ cgiDefaultServerName ~ "\".", "NAME") server = cgiDefaultServerName,
-	)
-	{
-		handleExplicitCGIRequest(server, nph);
-	}
-
 	// Internal
+
 	void jobRunner(string jobID)
 	{
 		runJob(jobID);
