@@ -29,6 +29,7 @@ import std.traits;
 
 import ae.sys.term : Term;
 import ae.utils.exception;
+import ae.utils.text : formatted;
 import ae.utils.time : StdTime;
 import ae.utils.time.format;
 
@@ -80,19 +81,6 @@ void printHistory(R)(Term t, R jobs)
 		count++;
 	}
 	t.put(count, " history ", count == 1 ? "entry" : "entries", " on record.\n");
-}
-
-auto formatted(string fmt, T...)(auto ref T values)
-{
-	static struct Formatted
-	{
-		T values;
-		void toString(void delegate(const(char)[]) sink) const
-		{
-			sink.formattedWrite!fmt(values);
-		}
-	}
-	return Formatted(values);
 }
 
 enum maxStatusLength = [EnumMembers!(JobStatus)].map!(status => jobStatusText(status).length).reduce!max;
