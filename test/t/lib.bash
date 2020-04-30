@@ -32,6 +32,9 @@ then
 
 	cd "$test_dir"
 
+	ln -s "$cirun" cirun
+	cirun=$test_dir/cirun
+
 	{
 		printf 'dataDir = cirun-data\n'
 		printf 'workDir = cirun-work\n'
