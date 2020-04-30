@@ -83,6 +83,8 @@ immutable Opts opts;
 immutable string configRoot; // file or directory
 immutable string[] configFiles;
 
+enum configFileName = "cirun.conf";
+
 shared static this()
 {
 	alias fun = structFun!Opts;
@@ -90,7 +92,6 @@ shared static this()
 	void usageFun(string) {}
 	auto opts = funopt!(fun, funOpts, usageFun)(Runtime.args);
 
-	enum configFileName = "cirun.conf";
 	enum sampleConfigFileName = configFileName ~ ".sample";
 	enum configDirName = configFileName ~ ".d";
 	enum defaultConfig = import("cirun.conf.sample");
