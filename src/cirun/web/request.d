@@ -142,6 +142,15 @@ void handleRequest(
 				context.response.serveText("OK");
 				break;
 
+			// HTTP test endpoint for test suite
+			debug
+			{
+			case "ping":
+				(pathParts.length == 1).httpEnforce(HttpStatusCode.NotFound);
+				context.response.serveText("pong\n");
+				break;
+			}
+
 			default:
 				throw new HttpException(HttpStatusCode.NotFound);
 		}
