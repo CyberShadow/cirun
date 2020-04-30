@@ -38,6 +38,10 @@ then
 	} > cirun.conf
 fi
 
+# Listen address for testing
+test_ip=127.223.63.71
+test_port=27698
+
 function git() {
 	command git \
 		-c user.name='cirun test suite' \
