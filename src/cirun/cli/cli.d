@@ -35,6 +35,7 @@ import cirun.common.job.format;
 import cirun.common.paths;
 import cirun.common.state;
 import cirun.web.cgi;
+import cirun.web.fastcgi;
 import cirun.web.server;
 
 struct CLI
@@ -199,6 +200,8 @@ void cliEntryPoint()
 	if (!opts.action)
 	{
 		if (handleImplicitCGIRequest())
+			return;
+		if (handleImplicitFastCGIServer())
 			return;
 	}
 
