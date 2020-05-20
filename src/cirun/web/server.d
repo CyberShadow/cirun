@@ -176,7 +176,23 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 
 	// Place on heap to extend lifetime past scope,
 	// even though this function creates a closure
-	Logger* log = { Logger log = consoleLogger("Server-" ~ name); return [log].ptr; }();
+	Logger* log = {
+		Logger log;
+		auto logName = "Server-" ~ name;
+		switch (serverConfig.logDir)
+		{
+			case "/dev/stderr":
+				log = consoleLogger(logName);
+				break;
+			case "/dev/null":
+				log = nullLogger();
+				break;
+			default:
+				log = fileLogger(logDir ~ "/" ~ logName);
+				break;
+		}
+		return [log].ptr;
+	}();
 
 	TcpServer server;
 	string protocol = join(

@@ -95,6 +95,12 @@
 ; ssl.cert = server.crt
 ; ssl.key = server.key
 
+# Create log files in this directory. Log files are automatically
+# named after the current date, and "rotated" at midnight.
+# Can also be set to /dev/stderr (default) to log to console, and
+# /dev/null to disable logging.
+; logDir = path/to/logdir
+
 # Specifies a path prefix.
 # If specified, all HTTP requests must begin with the given prefix;
 # otherwise, the request is rejected.

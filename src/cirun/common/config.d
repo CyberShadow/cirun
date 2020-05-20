@@ -82,6 +82,7 @@ struct Config
 		}
 		SSL ssl;
 
+		string logDir = "/dev/stderr";
 		string prefix = "/";
 		string username;
 		string password;
