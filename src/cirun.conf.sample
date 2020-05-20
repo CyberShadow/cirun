@@ -34,27 +34,55 @@
 
 
 ##############################################################################
-# HTTP server options
+# Server options
 
-# cirun uses a HTTP server to receive webhooks, and allow viewing
-# execution status and logs.  cirun can also be used without a HTTP
+# cirun can accept HTTP requests to process webhooks, and allow
+# viewing execution status and logs.  cirun can also be used without a
 # server (the default), with these features being unavailable.
 
-# You can specify any (unique) string instead of "main".
+# The server functionality of cirun can be configured in a rich
+# variety of ways, supporting CGI, FastCGI (both via direct execution
+# or as a stand-alone process), and pure HTTP (with or without SSL).
+
+# You can specify any (unique) string as a server configuration name
+# instead of "main".
 ; [server.main]
 
-# The IP address to bind to.
+# How cirun receives connections.
+# Can be set to:
+# - inet - listen for TCP connections on an Internet address/port
+#     (default)
+# - unix - listen for connections on an UNIX domain socket
+# - stdin - requests are read from standard input, responses are sent
+#     to standard output (used by FastCGI and e.g. systemd sockets
+#     with Listen=no)
+# - accept - accept connections from file descriptor 0
+#     (used by FastCGI and e.g. systemd sockets with Listen=yes)
+; transport = inet
+
+# Protocol for the connection stream.
+# Can be set to:
+# - http - HTTP 1.1 (default)
+# - cgi - CGI (transport must be set to "stdin")
+# - fastcgi - FastCGI (transport must be "accept", "inet", or "unix")
+; protocol = http
+
+# The IP address to bind to. Used when transport = inet.
 # The default is to bind to all interfaces.
 ; listen.addr = 127.0.0.1
 
-# The TCP port to listen on.
+# The TCP port to listen on. Used when transport = inet.
 # By default, a random free port will be chosen on each execution.
 ; listen.port = 8000
 
-# If specified, cirun will listen on a UNIX socket instead of TCP.
 # Specifies the path to the UNIX socket to create.
-# The default is unset (listen on TCP).
+# Used when transport = unix.
 ; listen.socketPath = cirun.sock
+
+# Whether to emit responses in Non-Parsed Headers mode when handling
+# CGI/FastCGI requests. If set, protocol must be "cgi" or "fastcgi".
+# The default is to auto-detect based on the binary name.
+; nph = true
 
 # If specified, use HTTP with TLS (HTTPS).
 # Specifies the paths to the server certificate and private key, in

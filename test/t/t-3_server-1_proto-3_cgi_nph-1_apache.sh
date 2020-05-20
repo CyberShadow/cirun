@@ -5,6 +5,8 @@ source ./lib.bash
 
 cat >> cirun.conf <<EOF
 [server.cgi]
+transport = stdin
+protocol = cgi
 prefix = /nph-cirun/
 EOF
 

@@ -34,8 +34,6 @@ import cirun.common.ids;
 import cirun.common.job.format;
 import cirun.common.paths;
 import cirun.common.state;
-import cirun.web.cgi;
-import cirun.web.fastcgi;
 import cirun.web.server;
 
 struct CLI
@@ -128,19 +126,14 @@ If a repository / commit is specified, show the job history for that object.`)
 	// Integration - Servers
 
 	@(`Start cirun as a server.`)
-	void server()
-	{
-		enforce(config.server.length, "No servers are configured.");
-		startServers();
-	}
-
-	@(`Handle a CGI request.`)
-	void cgi(
-		Switch!"Emit response in Non-Parsed Headers mode." nph = false,
-		Option!(string, "The name of the server configuration section to use.\nDefaults to \"" ~ cgiDefaultServerName ~ "\".", "NAME") server = cgiDefaultServerName,
+	void server(
+		Option!(string, "If set, exclusively start the server with the given configuration section name.", "NAME") serverName = null,
 	)
 	{
-		handleExplicitCGIRequest(server, nph);
+		if (serverName)
+			startServer(serverName);
+		else
+			startServers();
 	}
 
 	// Utility
@@ -198,12 +191,8 @@ string resolveJob(string id)
 void cliEntryPoint()
 {
 	if (!opts.action)
-	{
-		if (handleImplicitCGIRequest())
+		if (runImplicitServer())
 			return;
-		if (handleImplicitFastCGIServer())
-			return;
-	}
 
 	static void usageFun(string usage)
 	{

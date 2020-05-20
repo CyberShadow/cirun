@@ -22,6 +22,7 @@ import std.file;
 import std.format;
 import std.parallelism : totalCPUs;
 import std.path : globMatch, absolutePath;
+import std.typecons;
 
 static import std.getopt;
 
@@ -47,6 +48,15 @@ struct Config
 
 	struct Server
 	{
+		enum Transport
+		{
+			inet,
+			unix,
+			stdin,
+			accept,
+		}
+		Transport transport;
+
 		struct Listen
 		{
 			string addr;
@@ -54,6 +64,16 @@ struct Config
 			string socketPath;
 		}
 		Listen listen;
+
+		enum Protocol
+		{
+			http,
+			cgi,
+			fastcgi,
+		}
+		Protocol protocol;
+
+		Nullable!bool nph;
 
 		struct SSL
 		{

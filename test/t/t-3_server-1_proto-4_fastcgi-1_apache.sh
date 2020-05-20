@@ -5,6 +5,8 @@ source ./lib.bash
 
 cat >> cirun.conf <<EOF
 [server.fastcgi]
+transport = accept
+protocol = fastcgi
 prefix = /cirun/
 EOF
 

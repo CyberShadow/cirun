@@ -3,7 +3,11 @@ source ./lib.bash
 
 # Test HTTP over TCP.
 
-printf '[server.main]\nlisten.addr = %s\nlisten.port = %d\n' "$test_ip" "$test_port" >> cirun.conf
+cat >> cirun.conf <<EOF
+[server.main]
+listen.addr = $test_ip
+listen.port = $test_port
+EOF
 
 "$cirun" server &
 server=$!
