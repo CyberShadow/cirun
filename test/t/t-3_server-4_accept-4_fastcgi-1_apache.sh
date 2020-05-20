@@ -40,7 +40,7 @@ pid_httpd=$!
 
 sleep 0.1
 
-diff -u <(curl -vfsS "http://$test_ip:$test_port/cirun/ping") <(echo pong)
+diff -u <(curl -fsS "http://$test_ip:$test_port/cirun/ping") <(echo pong)
 
 kill $pid_httpd
 wait
