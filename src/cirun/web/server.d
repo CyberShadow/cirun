@@ -34,6 +34,7 @@ import ae.net.http.responseex;
 import ae.net.http.server;
 import ae.net.shutdown;
 import ae.sys.log;
+import ae.utils.array;
 
 import cirun.web.request;
 
@@ -199,7 +200,27 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 		version (SSL) if (ctx)
 			c = ssl.createAdapter(ctx, c);
 
-		alias connRemoteAddressStr = remoteAddressStr;
+		void handleRequest(HttpRequest request, void delegate(HttpResponse) handleResponse)
+		{
+			void logAndHandleResponse(HttpResponse response)
+			{
+				log.log([
+					"", // align IP to tab
+					request ? request.remoteHosts(remoteAddressStr).get(0, remoteAddressStr) : remoteAddressStr,
+					response ? text(cast(ushort)response.status) : "-",
+					request ? format("%9.2f ms", request.age.total!"usecs" / 1000f) : "-",
+					request ? request.method : "-",
+					request ? protocol ~ "://" ~ localAddressStr ~ request.resource : "-",
+					response ? response.headers.get("Content-Type", "-") : "-",
+					request ? request.headers.get("Referer", "-") : "-",
+					request ? request.headers.get("User-Agent", "-") : "-",
+				].join("\t"));
+
+				handleResponse(response);
+			}
+
+			.handleRequest(request, serverConfig, &logAndHandleResponse, *log);
+		}
 
 		final switch (serverConfig.protocol)
 		{
@@ -217,7 +238,7 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 					responseWritten = true;
 				}
 
-				handleRequest(request, serverConfig, &handleResponse, *log);
+				handleRequest(request, &handleResponse);
 				assert(responseWritten);
 				break;
 			}
@@ -232,16 +253,19 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 				auto fconn = new FastCGIResponderConnection(c);
 				fconn.log = *log;
 				fconn.nph = nph;
-				void handleRequest(ref CGIRequest cgiRequest, void delegate(HttpResponse) handleResponse)
+				void handleCGIRequest(ref CGIRequest cgiRequest, void delegate(HttpResponse) handleResponse)
 				{
 					auto request = new CGIHttpRequest(cgiRequest);
-					.handleRequest(request, serverConfig, handleResponse, *log);
+					handleRequest(request, handleResponse);
 				}
-				fconn.handleRequest = &handleRequest;
+				fconn.handleRequest = &handleCGIRequest;
 				break;
 			}
 			case Config.Server.Protocol.http:
 			{
+				alias connRemoteAddressStr = remoteAddressStr;
+				alias handleServerRequest = handleRequest;
+
 				final class HttpConnection : BaseHttpServerConnection
 				{
 				protected:
@@ -256,7 +280,7 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 
 					void onRequest(HttpRequest request)
 					{
-						.handleRequest(request, serverConfig, &sendResponse, log);
+						handleServerRequest(request, &sendResponse);
 					}
 
 					override bool acceptMore() { return server.isListening; }
