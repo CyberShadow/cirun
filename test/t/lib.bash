@@ -44,6 +44,7 @@ fi
 # Listen address for testing
 test_ip=127.223.63.71
 test_port=27698
+test_port2=$((test_port+1))
 
 function git() {
 	command git \
