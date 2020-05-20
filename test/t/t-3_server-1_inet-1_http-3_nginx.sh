@@ -14,6 +14,7 @@ pid_cirun=$!
 sleep 0.1
 
 cat > nginx.conf <<EOF
+daemon off;
 pid        $test_dir/nginx.pid;
 
 events {}
@@ -35,12 +36,11 @@ http {
 }
 EOF
 
-nginx -c "$PWD"/nginx.conf
-pid_httpd=$(cat "$test_dir"/nginx.pid)
-
+nginx -c "$PWD"/nginx.conf &
+pid_httpd=$!
 sleep 0.1
 
-diff -u <(curl -vfsS "http://$test_ip:$test_port/ping") <(echo pong)
+diff -u <(curl -fsS "http://$test_ip:$test_port/ping") <(echo pong)
 
 kill "$pid_httpd"
 kill "$pid_cirun"
