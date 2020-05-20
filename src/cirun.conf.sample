@@ -41,8 +41,9 @@
 # server (the default), with these features being unavailable.
 
 # The server functionality of cirun can be configured in a rich
-# variety of ways, supporting CGI, FastCGI (both via direct execution
-# or as a stand-alone process), and pure HTTP (with or without SSL).
+# variety of ways, supporting CGI, SCGI, FastCGI (both via direct
+# execution or as a stand-alone process), and pure HTTP (with or
+# without SSL).
 
 # You can specify any (unique) string as a server configuration name
 # instead of "main".
@@ -64,7 +65,8 @@
 # Can be set to:
 # - http - HTTP 1.1 (default)
 # - cgi - CGI (transport must be set to "stdin")
-# - fastcgi - FastCGI (transport must be "accept", "inet", or "unix")
+# - scgi - SCGI
+# - fastcgi - FastCGI
 ; protocol = http
 
 # The IP address to bind to. Used when transport = inet.
@@ -80,8 +82,9 @@
 ; listen.socketPath = cirun.sock
 
 # Whether to emit responses in Non-Parsed Headers mode when handling
-# CGI/FastCGI requests. If set, protocol must be "cgi" or "fastcgi".
-# The default is to auto-detect based on the binary name.
+# CGI/SCGI/FastCGI requests. If set, protocol must be "cgi", "scgi",
+# or "fastcgi".  The default is to auto-detect based on the binary
+# name.
 ; nph = true
 
 # If specified, use HTTP with TLS (HTTPS).

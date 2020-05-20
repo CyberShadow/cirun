@@ -69,6 +69,7 @@ struct Config
 		{
 			http,
 			cgi,
+			scgi,
 			fastcgi,
 		}
 		Protocol protocol;

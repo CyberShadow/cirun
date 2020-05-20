@@ -31,6 +31,7 @@ import ae.net.http.cgi.common;
 import ae.net.http.cgi.script;
 import ae.net.http.fastcgi.app;
 import ae.net.http.responseex;
+import ae.net.http.scgi.app;
 import ae.net.http.server;
 import ae.net.shutdown;
 import ae.sys.log;
@@ -125,6 +126,11 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 {
 	scope(failure) stderr.writefln("Error with server %s:", name);
 
+	auto isSomeCGI = serverConfig.protocol.among(
+		Config.Server.Protocol.cgi,
+		Config.Server.Protocol.scgi,
+		Config.Server.Protocol.fastcgi);
+
 	// Check options
 	if (serverConfig.listen.addr)
 		enforce(serverConfig.transport == Config.Server.Transport.inet,
@@ -142,10 +148,8 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 		enforce(serverConfig.protocol == Config.Server.Protocol.http,
 			"SSL can only be used with protocol = http");
 	if (!serverConfig.nph.isNull)
-		enforce(serverConfig.protocol.among(
-				Config.Server.Protocol.cgi,
-				Config.Server.Protocol.fastcgi),
-			"Setting NPH only makes sense with protocol = cgi or fastcgi");
+		enforce(isSomeCGI,
+			"Setting NPH only makes sense with protocol = cgi, scgi, or fastcgi");
 	enforce(serverConfig.prefix.startsWith("/") && serverConfig.prefix.endsWith("/"),
 		"Server prefix should start and end with /");
 
@@ -188,7 +192,7 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 		"+");
 
 	bool nph;
-	if (serverConfig.protocol.among(Config.Server.Protocol.cgi, Config.Server.Protocol.fastcgi))
+	if (isSomeCGI)
 		nph = serverConfig.nph.isNull ? isNPH() : serverConfig.nph.get;
 
 	string[] serverAddrs;
@@ -240,6 +244,19 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 
 				handleRequest(request, &handleResponse);
 				assert(responseWritten);
+				break;
+			}
+			case Config.Server.Protocol.scgi:
+			{
+				auto conn = new SCGIConnection(c);
+				conn.log = *log;
+				conn.nph = nph;
+				void handleSCGIRequest(ref CGIRequest cgiRequest)
+				{
+					auto request = new CGIHttpRequest(cgiRequest);
+					handleRequest(request, &conn.sendResponse);
+				}
+				conn.handleRequest = &handleSCGIRequest;
 				break;
 			}
 			case Config.Server.Protocol.fastcgi:
