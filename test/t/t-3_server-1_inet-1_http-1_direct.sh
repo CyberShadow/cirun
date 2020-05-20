@@ -10,10 +10,10 @@ listen.port = $test_port
 EOF
 
 "$cirun" server &
-server=$!
+pid_cirun=$!
 sleep 0.1
 
 diff -u <(curl -fsS "http://$test_ip:$test_port/ping") <(echo pong)
 
-kill $server
+kill "$pid_cirun"
 wait

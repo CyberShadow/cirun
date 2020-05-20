@@ -36,11 +36,12 @@ http {
 EOF
 
 nginx -c "$PWD"/nginx.conf
+pid_httpd=$(cat "$test_dir"/nginx.pid)
 
 sleep 0.1
 
 diff -u <(curl -vfsS "http://$test_ip:$test_port/ping") <(echo pong)
 
-kill "$(cat "$test_dir"/nginx.pid)"
-kill $pid_cirun
+kill "$pid_httpd"
+kill "$pid_cirun"
 wait

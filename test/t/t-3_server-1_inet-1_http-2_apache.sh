@@ -31,12 +31,12 @@ ProxyPass "/"  "http://$test_ip:$test_port2/"
 EOF
 
 httpd -f "$PWD"/apache.conf -X &
-server=$!
+pid_httpd=$!
 
 sleep 0.1
 
 diff -u <(curl -fsS "http://$test_ip:$test_port/ping") <(echo pong)
 
-kill $server
-kill $pid_cirun
+kill "$pid_httpd"
+kill "$pid_cirun"
 wait
