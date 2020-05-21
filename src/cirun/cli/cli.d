@@ -16,9 +16,9 @@ module cirun.cli.cli;
 import std.algorithm.searching;
 import std.conv;
 import std.exception;
-import std.file : thisExePath, exists;
+import std.file : thisExePath, exists, write;
 import std.path;
-import std.stdio;
+import std.stdio : stdout, stderr, File;
 import std.string;
 
 import ae.sys.term : term;
@@ -39,6 +39,16 @@ import cirun.web.server;
 struct CLI
 {
 static:
+	@(`Write a sample configuration file.`)
+	void init()
+	{
+		enforce(!sampleConfigFileName.exists, "Not overwriting " ~ sampleConfigFileName ~ ".");
+		write(sampleConfigFileName, defaultConfig);
+		stderr.writeln(
+			"Created " ~ sampleConfigFileName ~ ".\n" ~
+			"Please edit " ~ sampleConfigFileName ~ " and rename it to " ~ configFileName ~ ".");
+	}
+
 	// UI
 
 	@(`Request and show a job for the given repository commit.
@@ -89,7 +99,7 @@ The syntax is as follows:
 			auto jobID = resolveJob(id);
 			auto result = getJobResult(jobID);
 			if (format)
-				formatJobResult(result, format).write;
+				stdout.write(formatJobResult(result, format));
 			else
 				term.printJobResult(result);
 		}

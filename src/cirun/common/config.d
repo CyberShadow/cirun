@@ -26,6 +26,7 @@ import std.typecons;
 
 static import std.getopt;
 
+import ae.sys.paths;
 import ae.utils.aa;
 import ae.utils.funopt;
 import ae.utils.meta;
@@ -106,6 +107,8 @@ immutable string configRoot; // file or directory
 immutable string[] configFiles;
 
 enum configFileName = "cirun.conf";
+enum sampleConfigFileName = configFileName ~ ".sample";
+enum defaultConfig = import("cirun.conf.sample");
 
 shared static this()
 {
@@ -114,9 +117,7 @@ shared static this()
 	void usageFun(string) {}
 	auto opts = funopt!(fun, funOpts, usageFun)(Runtime.args);
 
-	enum sampleConfigFileName = configFileName ~ ".sample";
 	enum configDirName = configFileName ~ ".d";
-	enum defaultConfig = import("cirun.conf.sample");
 	immutable(string)[] configFiles;
 	bool configRootIsDir;
 
@@ -128,10 +129,17 @@ shared static this()
 	}
 	else
 	{
+		auto searchDirs = [
+			".",
+			] ~ getConfigDirs("cirun") ~ [
+			Runtime.args[0].absolutePath().dirName(),
+			thisExePath.dirName,
+		];
 		string programDir = {
-			foreach (path; [".", Runtime.args[0].absolutePath().dirName(), thisExePath.dirName])
+			foreach (ref searchDir; searchDirs)
 			{
-				path = path.absolutePath().buildNormalizedPath();
+				searchDir = searchDir.absolutePath().buildNormalizedPath();
+				auto path = searchDir;
 				while (true)
 				{
 					if (path.buildPath(configDirName).exists || path.buildPath(configFileName).exists)
@@ -144,14 +152,15 @@ shared static this()
 			}
 			return null;
 		}();
-		if (!programDir)
-		{
-			write(sampleConfigFileName, defaultConfig);
-			throw new Exception("\n" ~
-				"Configuration file or directory not found.\n" ~
-				"Created " ~ sampleConfigFileName ~ ".\n" ~
-				"Please edit " ~ sampleConfigFileName ~ ", rename it to " ~ configFileName ~ ", and rerun cirun.");
-		}
+		enforce(programDir || opts.action == "init", format("\n" ~
+			"Configuration file or directory not found.\n" ~
+			"Searched for %s or %s in:\n" ~
+			"%-(- %s\n%|%)" ~
+			"and parent directories.\n" ~
+			"Run \"cirun init\" to create a new cirun configuration.\n",
+			configFileName, configDirName,
+			searchDirs.orderedSet.keys,
+		));
 
 		auto configDirPath = programDir.buildPath(configDirName);
 		auto configFilePath = programDir.buildPath(configFileName);

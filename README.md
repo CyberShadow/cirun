@@ -57,7 +57,7 @@ Installation
 
   Alternatively, run `dub run cirun` to fetch, build and run from source.
 
-- To get started, run `cirun` once.  
+- To get started, run `cirun init`.  
   A template configuration file will be created for you to fill out.
 
 - Instructions for integrating with software forge or web server software
