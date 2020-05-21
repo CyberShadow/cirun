@@ -21,7 +21,7 @@ import std.exception;
 import std.file;
 import std.format;
 import std.parallelism : totalCPUs;
-import std.path : globMatch, absolutePath;
+import std.path;
 import std.typecons;
 
 static import std.getopt;
@@ -128,13 +128,40 @@ shared static this()
 	}
 	else
 	{
-		if (!configDirName.exists)
-			configRoot = configFileName;
+		string programDir = {
+			foreach (path; [".", Runtime.args[0].absolutePath().dirName(), thisExePath.dirName])
+			{
+				path = path.absolutePath().buildNormalizedPath();
+				while (true)
+				{
+					if (path.buildPath(configDirName).exists || path.buildPath(configFileName).exists)
+						return path;
+					auto parent = dirName(path);
+					if (parent == path)
+						break;
+					path = parent;
+				}
+			}
+			return null;
+		}();
+		if (!programDir)
+		{
+			write(sampleConfigFileName, defaultConfig);
+			throw new Exception("\n" ~
+				"Configuration file or directory not found.\n" ~
+				"Created " ~ sampleConfigFileName ~ ".\n" ~
+				"Please edit " ~ sampleConfigFileName ~ ", rename it to " ~ configFileName ~ ", and rerun cirun.");
+		}
+
+		auto configDirPath = programDir.buildPath(configDirName);
+		auto configFilePath = programDir.buildPath(configFileName);
+		if (!configDirPath.exists)
+			configRoot = configFilePath;
 		else
 		{
-			enforce(!configFileName.exists,"Found both a configuration file (%s) and directory (%s). Only one must exist."
-				.format(configFileName, configDirName));
-			configRoot = configDirName;
+			enforce(!configFilePath.exists,"Found both a configuration file (%s) and directory (%s). Only one must exist."
+				.format(configFilePath, configDirPath));
+			configRoot = configDirPath;
 			configRootIsDir = true;
 		}
 	}
@@ -146,14 +173,6 @@ shared static this()
 
 	configFiles = configFiles.filter!exists.array;
 	.configFiles = configFiles;
-	if (!configFiles.length)
-	{
-		write(sampleConfigFileName, defaultConfig);
-		throw new Exception("\n" ~
-			"Configuration file or directory not found.\n" ~
-			"Created " ~ sampleConfigFileName ~ ".\n" ~
-			"Please edit " ~ sampleConfigFileName ~ ", rename it to " ~ configFileName ~ ", and rerun cirun.");
-	}
 
 	auto config = loadInis!Config(configFiles);
 	opts.configLines.parseIniInto(config);
