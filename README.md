@@ -31,10 +31,11 @@ Compatibility
     </ul></td><td><p></p><ul>
         <li>none (local git / command-line only)   </li>
         <li>none (remote git hook)   </li>
+        <li>Gitolite   </li>
+        <li>Gogs / Gitea   </li>
         <li>GitHub   </li>
         <li>GitLab   </li>
-        <li>Gogs / Gitea   </li>
-        <li>Gitolite   </li>
+        <li>BitBucket   </li>
     </ul></td><td><p></p><ul>
         <li>none (CLI only)   </li>
         <li>built-in HTTP server   </li>

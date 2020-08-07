@@ -87,6 +87,23 @@ struct Config
 		string prefix = "/";
 		string username;
 		string password;
+
+		struct WebHook
+		{
+			enum Type
+			{
+				none,
+				gogs,
+				gitea,
+				github,
+				gitlab,
+				bitbucket,
+			}
+			Type type;
+
+			string secret;
+		}
+		WebHook[string] webhook;
 	}
 	Server[string] server;
 

@@ -113,6 +113,28 @@
 ; username = initech
 ; password = hunter2
 
+# Zero or more webhook endpoints can be configured per server.
+# Webhooks are used to receive notifications from software forges,
+# such as when new commits are pushed or a pull request was created.
+#
+# The WebHook URL will be http://.../<prefix>/webhook/<name> ,
+# where <prefix> is the server prefix configured above, and <name> is
+# the section name (e.g. "my-hook" below).
+#
+# Security note: cirun will act upon all received webhooks. To avoid
+# testing untrusted code (code not already in your repository), do not
+# enable delivery of pull/merge request events in the sending
+# service's webhook configuration.
+; [server.main.webhook.my-hook]
+
+# Webhook type.
+# Can be one of gogs, gitea, github, gitlab, or bitbucket.
+; format = github
+
+# Webhook secret. Must match the configured secret in the sending
+# service's webhook configuration.
+; secret = hunter2
+
 # Multiple server sections may be specified;
 # for example, you may configure one external server for HTML pages,
 # and one internal server for receiving webhooks.

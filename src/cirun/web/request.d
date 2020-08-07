@@ -24,6 +24,7 @@ import ae.sys.dataset;
 import ae.sys.log;
 import ae.utils.array;
 
+import cirun.ci.job;
 import cirun.common.config;
 import cirun.web.common;
 import cirun.web.html.pages;
@@ -135,12 +136,22 @@ void handleRequest(
 				context.response.status = HttpStatusCode.Found;
 				break;
 			case "webhook":
-				(pathParts.length == 1).httpEnforce(HttpStatusCode.NotFound);
-				(request.method == "POST").httpEnforce(HttpStatusCode.MethodNotAllowed);
-				(request.headers.get("Content-Type", null) == "application/json").httpEnforce(HttpStatusCode.UnsupportedMediaType);
-				processWebhook(cast(string)request.data.joinToHeap());
+			{
+				(pathParts.length >= 2).httpEnforce(HttpStatusCode.NotFound);
+				auto name = pathParts[1 .. $].join("/");
+				auto webhookConfig = name in serverConfig.webhook;
+				webhookConfig.httpEnforce(HttpStatusCode.NotFound);
+				auto specs = parseWebhook(*webhookConfig, request);
+				foreach (ref spec; specs)
+				{
+					log("Webhook " ~ name ~ ": Starting job for " ~ spec.repo ~ " commit " ~ spec.commit);
+					needJob(spec, null, false);
+				}
+				if (!specs.length)
+					log("Webhook " ~ name ~ ": Nothing to do.");
 				context.response.serveText("OK");
 				break;
+			}
 
 			// HTTP test endpoint for test suite
 			debug
