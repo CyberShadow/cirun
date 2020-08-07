@@ -39,6 +39,7 @@ Compatibility
         <li>none (CLI only)   </li>
         <li>built-in HTTP server   </li>
         <li>CGI   </li>
+        <li>SCGI   </li>
         <li>FastCGI   </li>
     </ul></td>
 </tr></table>
