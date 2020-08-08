@@ -25,9 +25,9 @@ do
 						exit
 					fi
 
-					if [[ $frontend == none && ( $transport == stdin || $transport == accept ) ]]
+					if [[ $frontend == none && $transport == accept ]]
 					then
-						printf ' > Need a frontend for stdin/accept\n'
+						printf ' > Need a frontend for transport=accept\n'
 						exit
 					fi
 
@@ -137,18 +137,17 @@ do
 					}
 					trap cleanup EXIT
 
-					curl_options=()
-					curl_prefix=http://$test_ip:$test_port
+					ncat_command=(ncat)
+					ncat_target=("$test_ip" "$test_port")
 
 					case $frontend in
 						none)
 							case $transport in
 								inet)
-									curl_prefix=http://$test_ip:$test_port2
+									ncat_target=("$test_ip" "$test_port2")
 									;;
 								unix)
-									curl_prefix=http://server
-									curl_options+=(--unix-socket cirun.sock)
+									ncat_target=(-U cirun.sock)
 									;;
 							esac
 							;;
@@ -317,7 +316,8 @@ do
 					if [[ -v url_prefix ]]
 					then
 						echo "prefix = $url_prefix/" >> cirun.conf
-						curl_prefix=$curl_prefix$url_prefix
+					else
+						url_prefix=
 					fi
 
 					case $transport in
@@ -326,9 +326,38 @@ do
 							pid_cirun=$!
 							sleep 0.1
 							;;
+						stdin)
+							if [[ "$frontend" == none ]]
+							then
+								ncat_command=("$cirun" server "$protocol")
+								ncat_target=()
+							fi
+							;;
 					esac
 
-					diff -u <(curl -fsS "${curl_options[@]}" "$curl_prefix/ping") <(echo pong)
+					rm -f .done
+					{
+						printf 'GET %s/ping HTTP/1.0\r\n\r\n' "$url_prefix"
+						while [[ ! -f .done ]] ; do sleep 0.1 ; done
+					} |
+						"${ncat_command[@]}" "${ncat_target[@]}" |
+						{
+							# Skip headers
+							while read -r line
+							do
+								re=$'^\r?$'
+								if [[ "$line" =~ $re ]]
+								then
+									break
+								fi
+							done
+
+							touch .done
+
+							# Pass body
+							cat
+						} |
+						diff -u /dev/stdin <(echo pong)
 				)
 			done
 		done
