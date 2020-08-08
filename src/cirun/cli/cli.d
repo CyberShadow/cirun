@@ -137,7 +137,7 @@ If a repository / commit is specified, show the job history for that object.`)
 
 	@(`Start cirun as a server.`)
 	void server(
-		Option!(string, "If set, exclusively start the server with the given configuration section name.", "NAME") serverName = null,
+		Parameter!(string, "If set, exclusively start the server with the given configuration section name.", "NAME") serverName = null,
 	)
 	{
 		if (serverName)
