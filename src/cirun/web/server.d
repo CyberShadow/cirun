@@ -55,6 +55,7 @@ void startServer(string serverName)
 		format!"Did not find a section named [server.%s] in %s."
 		(serverName, configFileName));
 	startServer(serverName, *pserverConfig, true);
+	socketManager.loop();
 }
 
 void startServers()
