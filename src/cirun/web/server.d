@@ -260,6 +260,7 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 
 				handleRequest(request, &handleResponse);
 				assert(responseWritten);
+				c.disconnect();
 				break;
 			}
 			case Config.Server.Protocol.scgi:
@@ -340,7 +341,6 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 				handleConnection(c,
 					environment.get("REMOTE_ADDR", "-"),
 					environment.get("SERVER_NAME", "-"));
-				c.disconnect();
 				return;
 			}
 			else
