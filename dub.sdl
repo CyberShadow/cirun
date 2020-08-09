@@ -6,4 +6,4 @@ license "MPL-2.0"
 targetType "executable"
 stringImportPaths "src"
 
-dependency "ae" version="==0.0.2515"
+dependency "ae" version="==0.0.2733"
