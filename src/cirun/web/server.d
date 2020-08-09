@@ -318,7 +318,7 @@ void startServer(string name, immutable Config.Server serverConfig, bool exclusi
 						handleServerRequest(request, &sendResponse);
 					}
 
-					override bool acceptMore() { return server.isListening; }
+					override bool acceptMore() { return server ? server.isListening : false; }
 					override string formatLocalAddress(HttpRequest r) { return protocol ~ "://" ~ localAddressStr; }
 					override @property string remoteAddressStr() { return connRemoteAddressStr; }
 				}
