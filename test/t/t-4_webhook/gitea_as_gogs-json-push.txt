@@ -1,0 +1,103 @@
+gogs - CyberShadow/webhook-test https://webhook.cirun.test:17143/CyberShadow/webhook-test.git ea0918b5f68a6226782f6443d0d620f6eaf7a29b
+POST /gitea_as_gogs-json HTTP/1.1
+Host: home.cy.md:12345
+User-Agent: GiteaServer
+Content-Length: 2633
+Content-Type: application/json
+X-GitHub-Delivery: c8162e8f-53b3-41c9-ba22-9f8280b116a9
+X-GitHub-Event: push
+X-Gitea-Delivery: c8162e8f-53b3-41c9-ba22-9f8280b116a9
+X-Gitea-Event: push
+X-Gogs-Delivery: c8162e8f-53b3-41c9-ba22-9f8280b116a9
+X-Gogs-Event: push
+Accept-Encoding: gzip
+
+{
+  "secret": "",
+  "ref": "refs/heads/master",
+  "before": "0000000000000000000000000000000000000000",
+  "after": "ea0918b5f68a6226782f6443d0d620f6eaf7a29b",
+  "compare_url": "https://webhook.cirun.test:17143/",
+  "commits": [
+    {
+      "id": "ea0918b5f68a6226782f6443d0d620f6eaf7a29b",
+      "message": "a:\n",
+      "url": "https://webhook.cirun.test:17143/CyberShadow/webhook-test/commit/ea0918b5f68a6226782f6443d0d620f6eaf7a29b",
+      "author": {
+        "name": "Vladimir Panteleev",
+        "email": "git@thecybershadow.net",
+        "username": "CyberShadow"
+      },
+      "committer": {
+        "name": "Vladimir Panteleev",
+        "email": "git@thecybershadow.net",
+        "username": "CyberShadow"
+      },
+      "verification": null,
+      "timestamp": "2020-08-07T15:49:46Z",
+      "added": null,
+      "removed": null,
+      "modified": null
+    }
+  ],
+  "head_commit": null,
+  "repository": {
+    "id": 35,
+    "owner": {
+      "id": 1,
+      "login": "CyberShadow",
+      "full_name": "",
+      "email": "cirun-wh@thecybershadow.net",
+      "avatar_url": "https://webhook.cirun.test:17143/avatars/19b0626f542ff5b6cbf3385c93b14106",
+      "language": "en-US",
+      "is_admin": true,
+      "username": "CyberShadow"
+    },
+    "name": "webhook-test",
+    "full_name": "CyberShadow/webhook-test",
+    "description": "",
+    "empty": false,
+    "private": false,
+    "fork": false,
+    "parent": null,
+    "mirror": false,
+    "size": 12,
+    "html_url": "https://webhook.cirun.test:17143/CyberShadow/webhook-test",
+    "ssh_url": "cirun@webhook.cirun.test:CyberShadow/webhook-test.git",
+    "clone_url": "https://webhook.cirun.test:17143/CyberShadow/webhook-test.git",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 0,
+    "watchers_count": 1,
+    "open_issues_count": 0,
+    "default_branch": "master",
+    "archived": false,
+    "created_at": "2020-08-07T16:07:19Z",
+    "updated_at": "2020-08-07T16:13:45Z",
+    "permissions": {
+      "admin": false,
+      "push": false,
+      "pull": false
+    }
+  },
+  "pusher": {
+    "id": 1,
+    "login": "CyberShadow",
+    "full_name": "",
+    "email": "cirun-wh@thecybershadow.net",
+    "avatar_url": "https://webhook.cirun.test:17143/avatars/19b0626f542ff5b6cbf3385c93b14106",
+    "language": "en-US",
+    "is_admin": true,
+    "username": "CyberShadow"
+  },
+  "sender": {
+    "id": 1,
+    "login": "CyberShadow",
+    "full_name": "",
+    "email": "cirun-wh@thecybershadow.net",
+    "avatar_url": "https://webhook.cirun.test:17143/avatars/19b0626f542ff5b6cbf3385c93b14106",
+    "language": "en-US",
+    "is_admin": true,
+    "username": "CyberShadow"
+  }
+}
