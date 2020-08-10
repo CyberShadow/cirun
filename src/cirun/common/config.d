@@ -171,9 +171,11 @@ shared static this()
 		}();
 		enforce(programDir || opts.action == "init", format("\n" ~
 			"Configuration file or directory not found.\n" ~
+			"\n" ~
 			"Searched for %s or %s in:\n" ~
 			"%-(- %s\n%|%)" ~
 			"and parent directories.\n" ~
+			"\n" ~
 			"Run \"cirun init\" to create a new cirun configuration.\n",
 			configFileName, configDirName,
 			searchDirs.orderedSet.keys,
