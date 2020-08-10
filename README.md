@@ -3,7 +3,7 @@ cirun
 
 cirun is a stand-alone CI test runner for popular self-hosted software forges.
 
-<img width="192" height="192" align="right" src="https://dump.thecybershadow.net/2cf05193d9eaa3ca9bbea83eb63a6381/cirun-13.svg">
+<img width="192" height="192" align="right" src="https://dump.cy.md/2cf05193d9eaa3ca9bbea83eb63a6381/cirun-13.svg">
 
 - Single binary, download and run
 - Build from source in one command

@@ -51,7 +51,7 @@ test_port2=$((test_port+1))
 function git() {
 	command git \
 		-c user.name='cirun test suite' \
-		-c user.email='test-suite@cirun.thecybershadow.net' \
+		-c user.email='test-suite@cirun.cy.md' \
 		"$@"
 }
 

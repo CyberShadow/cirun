@@ -1,6 +1,6 @@
 name "cirun"
 description "Minimal-setup CI runner"
-authors "Vladimir Panteleev <vladimir@thecybershadow.net>"
+authors "Vladimir Panteleev <vladimir@cy.md>"
 homepage "https://github.com/CyberShadow/cirun"
 license "MPL-2.0"
 targetType "executable"
