@@ -108,7 +108,7 @@ void runJob(string jobID)
 			auto stderr = pipe();
 
 			Pid pid;
-			static if (__VERSION__ > 2_091)
+			static if (__VERSION__ > 2_094)
 			{
 				pid = spawnProcess(commandLine,
 					stdin, stdout.writeEnd, stderr.writeEnd,
