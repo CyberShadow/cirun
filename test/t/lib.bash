@@ -20,6 +20,8 @@ fi
 cirun=$PWD/../../cirun
 
 test_name=$(basename "$0" .sh)
+test_data_dir=$PWD/$test_name
+
 if [[ "$test_name" != all ]]
 then
 	test_dir=$tmp_dir/$test_name
