@@ -56,7 +56,7 @@ string genHookScript(string kind, string repositoryName)
 
 commit=$(git rev-parse HEAD)
 git_dir=$(git rev-parse --absolute-git-dir)
-exec %-(%s %) run --quiet %s "$git_dir" "$commit"
+exec %-(%s %) run --quiet %s "$commit" --clone-url "$git_dir"
 EOF"
 				.format(
 					selfCmdLine.map!escapePosixShellArgument,
@@ -74,7 +74,7 @@ git_dir=$(git rev-parse --absolute-git-dir)
 while read -r local_ref local_sha1 remote_ref remote_sha1
 do
 	printf -- 'Checking cirun status for %%s (%%s)...\n' "$local_ref" "$local_sha1" 1>&2
-	job_id=$(%1$-(%s %) run --quiet --wait --job-id-file=- %2$s "$git_dir" "$local_sha1")
+	job_id=$(%1$-(%s %) run --quiet --wait --job-id-file=- %2$s "$local_sha1" --clone-url "$git_dir")
 	status=$(%1$-(%s %) status "$job_id" --format=%%s)
 	if [ "$status" != success ]
 	then
@@ -98,7 +98,7 @@ unset GIT_DIR # Don't propagate to cirun jobs
 git_dir=$(git rev-parse --absolute-git-dir)
 while read -r old_sha1 new_sha1 ref
 do
-	%-(%s %) run --quiet %s "$git_dir" "$new_sha1"
+	%-(%s %) run --quiet %s "$new_sha1" --clone-url "$git_dir"
 done
 EOF"
 				.format(

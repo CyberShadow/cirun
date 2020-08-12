@@ -21,7 +21,7 @@ env | grep ^CIRUN_ | grep -v ^CIRUN_BUILT= | sort > "$PWD"/env.txt
 EOF
 chmod +x ./trigger.sh
 
-"$cirun" run --job-id-file=jobid --wait repo "$test_dir"/repo "$commit"
+"$cirun" run --job-id-file=jobid --wait repo "$commit" --clone-url "$test_dir"/repo
 jobid=$(cat jobid)
 
 diff -u env.txt /dev/stdin <<EOF

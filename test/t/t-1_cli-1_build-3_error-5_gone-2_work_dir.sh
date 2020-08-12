@@ -11,7 +11,7 @@ git -C "$test_dir"/repo add -A
 git -C "$test_dir"/repo commit -qm 'Initial commit'
 commit=$(git -C "$test_dir"/repo rev-parse HEAD)
 
-"$cirun" run --job-id-file=jobid --quiet repo "$test_dir"/repo "$commit"
+"$cirun" run --job-id-file=jobid --quiet repo "$commit" --clone-url "$test_dir"/repo
 jobid=$(cat jobid)
 sleep 0.5
 pkill -f "$jobid"

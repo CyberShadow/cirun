@@ -56,8 +56,8 @@ static:
 If a job for the given commit already exists, show information about that job instead of starting a new one.`)
 	void run(
 		string repository,
-		string cloneURL, // TODO: figure out if this should be a parameter or option
 		string commit,
+		Option!(string, "Git URL to clone the repository from", "URL") cloneURL,
 		Switch!"Wait until this job has finished." wait = false,
 		Switch!"Do not print the job status." quiet = false,
 		Option!(string, "Write job ID to the given file.", "PATH") jobIDFile = null,
@@ -66,8 +66,8 @@ If a job for the given commit already exists, show information about that job in
 	{
 		JobSpec spec;
 		spec.repo = repository;
-		spec.cloneURL = cloneURL;
 		spec.commit = commit;
+		spec.cloneURL = cloneURL;
 		auto result = needJob(spec, retest, wait);
 		if (!quiet)
 			term.printJobResult(result);

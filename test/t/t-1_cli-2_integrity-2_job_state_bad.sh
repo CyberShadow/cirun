@@ -10,7 +10,7 @@ git -C "$test_dir"/repo add -A
 git -C "$test_dir"/repo commit -qm 'Initial commit'
 commit=$(git -C "$test_dir"/repo rev-parse HEAD)
 
-"$cirun" run --job-id-file=jobid --quiet --wait repo "$test_dir"/repo "$commit"
+"$cirun" run --job-id-file=jobid --quiet --wait repo "$commit" --clone-url "$test_dir"/repo
 jobid=$(cat jobid)
 
 echo garbage > cirun-data/jobs/*/*/job.json

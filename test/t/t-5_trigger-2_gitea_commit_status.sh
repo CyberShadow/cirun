@@ -18,7 +18,7 @@ EOF
 
 printf 'HTTP/1.0 200 OK\r\n\r\n' | ncat -v -l $test_ip $test_port > response.http &
 
-"$cirun" run --job-id-file=jobid --wait repo "$test_dir"/repo "$commit"
+"$cirun" run --job-id-file=jobid --wait repo "$commit" --clone-url "$test_dir"/repo
 jobid=$(cat jobid)
 
 wait

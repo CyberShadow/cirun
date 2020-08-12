@@ -12,7 +12,7 @@ git -C "$test_dir"/repo add -A
 git -C "$test_dir"/repo commit -qm 'Initial commit'
 commit=$(git -C "$test_dir"/repo rev-parse HEAD)
 
-"$cirun" run --wait repo "$test_dir"/repo "$commit" 2>&1 | grep -F 'Status: success'
+"$cirun" run --wait repo "$commit" --clone-url "$test_dir"/repo 2>&1 | grep -F 'Status: success'
 diff -u <("$cirun" log repo 2>&1 | tail -n 8 | tr 0-9 '#') /dev/stdin <<'EOF'
 [##:##:## +##:##.###] Process started: './.cirun'
 [##:##:## +##:##.###] a

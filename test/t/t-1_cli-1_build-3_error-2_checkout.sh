@@ -9,4 +9,4 @@ chmod +x "$test_dir"/repo/.cirun
 git -C "$test_dir"/repo add -A
 git -C "$test_dir"/repo commit -qm 'Initial commit'
 
-"$cirun" run --wait repo "$test_dir"/repo 0123456789012345678901234567890123456789 2>&1 | grep -F 'Status: errored (Check-out failed with status'
+"$cirun" run --wait repo 0123456789012345678901234567890123456789 --clone-url "$test_dir"/repo 2>&1 | grep -F 'Status: errored (Check-out failed with status'
