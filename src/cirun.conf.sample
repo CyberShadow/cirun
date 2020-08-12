@@ -236,5 +236,18 @@
 
 # Indicates the action to perform.
 # Supported types are:
+# - exec - run a user-defined program
 # Each type has its specific configuration, see below.
-; type = none
+; type = exec
+
+######## Exec
+
+# The command to execute.
+# Can be used to implement trigger behavior not handled by the above
+# built-in triggers.
+# The following environment variables will be set:
+# - CIRUN_EVENT - the event (as in the "events" setting, e.g. "broken")
+# - CIRUN_REPO - repository name
+# - CIRUN_COMMIT - git commit SHA1
+# - CIRUN_JOB - cirun job ID
+; exec.command = ["/path/to/script", "arg1", "arg2"]

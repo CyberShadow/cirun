@@ -20,6 +20,7 @@ import ae.utils.array;
 
 import cirun.common.config;
 import cirun.common.state;
+import cirun.trigger.exec;
 
 struct TriggerEvent
 {
@@ -49,8 +50,11 @@ struct TriggerConfig
 	enum Type
 	{
 		none,
+		exec,
 	}
 	Type type;
+
+	ExecTriggerConfig exec;
 }
 
 void checkTriggersConfig()
@@ -61,6 +65,12 @@ void checkTriggersConfig()
 		{
 			case TriggerConfig.Type.none:
 				throw new Exception("Trigger type not configured!");
+			foreach (type; EnumMembers!(TriggerConfig.Type)[1..$])
+			{
+				case type:
+					checkTriggerConfig!type(triggerConfig);
+					break typeSwitch;
+			}
 		}
 }
 
@@ -75,6 +85,12 @@ void runTriggers(TriggerEvent event)
 				{
 					case TriggerConfig.Type.none:
 						assert(false);
+					foreach (type; EnumMembers!(TriggerConfig.Type)[1..$])
+					{
+						case type:
+							runTrigger!type(triggerConfig, event);
+							break typeSwitch;
+					}
 				}
 			}
 			catch (Exception e)
