@@ -21,6 +21,7 @@ import ae.utils.array;
 import cirun.common.config;
 import cirun.common.state;
 import cirun.trigger.exec;
+import cirun.trigger.gitea;
 
 struct TriggerEvent
 {
@@ -51,10 +52,12 @@ struct TriggerConfig
 	{
 		none,
 		exec,
+		giteaCommitStatus,
 	}
 	Type type;
 
 	ExecTriggerConfig exec;
+	GiteaTriggerConfig gitea;
 }
 
 void checkTriggersConfig()
