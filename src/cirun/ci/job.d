@@ -143,7 +143,7 @@ private JobResult startJob(string jobID)
 		auto p = pipe();
 		auto nullFile = File(nullFileName, "r+");
 		spawnProcess(selfCmdLine ~ ["job-runner", jobID],
-			nullFile, p.writeEnd, nullFile,
+			nullFile, p.writeEnd, stderr,
 			null,
 			std.process.Config.detached,
 		);
