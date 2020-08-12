@@ -65,7 +65,12 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 		{
 			auto json = getJSON(getBody());
 			enforce(json["secret"].str == webhookConfig.secret, "Webhook secret mismatch");
-			switch (request.headers.get("X-Gogs-Event", null).enforce("No X-Gogs-Event header"))
+			string event;
+			if (webhookConfig.type == Config.Server.WebHook.Type.gogs)
+				event = request.headers.get("X-Gogs-Event", null).enforce("No X-Gogs-Event header");
+			else
+				event = request.headers.get("X-Gitea-Event", null).enforce("No X-Gitea-Event header");
+			switch (event)
 			{
 				case "push":
 				{
