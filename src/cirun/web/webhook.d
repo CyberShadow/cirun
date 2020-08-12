@@ -68,23 +68,27 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 			switch (request.headers.get("X-Gogs-Event", null).enforce("No X-Gogs-Event header"))
 			{
 				case "push":
+				{
 					if (json["after"].str == "0000000000000000000000000000000000000000")
 						return null; // ping
-					return [JobSpec(
-						json["repository"]["full_name"].str,
-						json["repository"]["clone_url"].str,
-						json["after"].str,
-					)];
+					JobSpec spec;
+					spec.repo     = json["repository"]["full_name"].str;
+					spec.cloneURL = json["repository"]["clone_url"].str;
+					spec.commit   = json["after"].str;
+					return [spec];
+				}
 				case "pull_request":
 					switch (json["action"].str)
 					{
 						case "opened":
 						case "synchronized":
-							return [JobSpec(
-								json["pull_request"]["base"]["repo"]["full_name"].str,
-								json["pull_request"]["head"]["repo"]["clone_url"].str,
-								json["pull_request"]["head"]["sha"].str,
-							)];
+						{
+							JobSpec spec;
+							spec.repo     = json["pull_request"]["base"]["repo"]["full_name"].str;
+							spec.cloneURL = json["pull_request"]["head"]["repo"]["clone_url"].str;
+							spec.commit   = json["pull_request"]["head"]["sha"].str;
+							return [spec];
+						}
 						default:
 							return null;
 					}
@@ -110,21 +114,23 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 			switch (request.headers.get("X-GitHub-Event", null).enforce("No X-GitHub-Event header"))
 			{
 				case "push":
-					return [JobSpec(
-						json["repository"]["full_name"].str,
-						json["repository"]["clone_url"].str,
-						json["after"].str,
-					)];
+				{
+					JobSpec spec;
+					spec.repo     = json["repository"]["full_name"].str;
+					spec.cloneURL = json["repository"]["clone_url"].str;
+					spec.commit   = json["after"].str;
+					return [spec];
+				}
 				case "pull_request":
 					switch (json["action"].str)
 					{
 						case "opened":
 						case "synchronize":
-							return [JobSpec(
-								json["pull_request"]["base"]["repo"]["full_name"].str,
-								json["pull_request"]["head"]["repo"]["clone_url"].str,
-								json["pull_request"]["head"]["sha"].str,
-							)];
+							JobSpec spec;
+							spec.repo     = json["pull_request"]["base"]["repo"]["full_name"].str;
+							spec.cloneURL = json["pull_request"]["head"]["repo"]["clone_url"].str;
+							spec.commit   = json["pull_request"]["head"]["sha"].str;
+							return [spec];
 						default:
 							return null;
 					}
@@ -141,21 +147,25 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 			switch (request.headers.get("X-Gitlab-Event", null).enforce("No X-Gitlab-Event header"))
 			{
 				case "Push Hook":
-					return [JobSpec(
-						json["project"]["path_with_namespace"].str,
-						json["project"]["url"].str,
-						json["after"].str,
-					)];
+				{
+					JobSpec spec;
+					spec.repo     = json["project"]["path_with_namespace"].str;
+					spec.cloneURL = json["project"]["url"].str;
+					spec.commit   = json["after"].str;
+					return [spec];
+				}
 				case "Merge Request Hook":
 					switch (json["object_attributes"]["action"].str)
 					{
 						case "open":
 						case "update":
-							return [JobSpec(
-								json["object_attributes"]["target"]["path_with_namespace"].str,
-								json["object_attributes"]["source"]["ssh_url"].str,
-								json["object_attributes"]["last_commit"]["id"].str,
-							)];
+						{
+							JobSpec spec;
+							spec.repo     = json["object_attributes"]["target"]["path_with_namespace"].str;
+							spec.cloneURL = json["object_attributes"]["source"]["ssh_url"].str;
+							spec.commit   = json["object_attributes"]["last_commit"]["id"].str;
+							return [spec];
+						}
 						default:
 							return null;
 					}
@@ -172,13 +182,15 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 			switch (request.headers.get("X-Event-Key", null).enforce("No X-Event-Key header"))
 			{
 				case "repo:push":
-					return [JobSpec(
-						json["repository"]["full_name"].str,
-						// Note: Although BitBucket does provide a clone URL,
-						// it requires a (possibly authenticated) API call.
-						json["repository"]["links"]["html"]["href"].str,
-						json["push"]["changes"][0]["new"]["target"]["hash"].str, // WTF!
-					)];
+				{
+					JobSpec spec;
+					spec.repo     = json["repository"]["full_name"].str;
+					// Note: Although BitBucket does provide a clone URL,
+					// it requires a (possibly authenticated) API call.
+					spec.cloneURL = json["repository"]["links"]["html"]["href"].str;
+					spec.commit   = json["push"]["changes"][0]["new"]["target"]["hash"].str; // WTF!
+					return [spec];
+				}
 				// TODO: Pull requests
 				default:
 					return null;
