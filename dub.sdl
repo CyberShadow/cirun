@@ -7,3 +7,4 @@ targetType "executable"
 stringImportPaths "src"
 
 dependency "ae" version="==0.0.2733"
+dependency "ae:sys-net-ae" version="==0.0.2733"

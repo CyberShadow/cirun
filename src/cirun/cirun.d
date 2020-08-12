@@ -14,6 +14,7 @@
 module cirun.cirun;
 
 import ae.utils.main;
+import ae.sys.net.ae;
 
 import cirun.cli.cli;
 
