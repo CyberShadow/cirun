@@ -32,6 +32,7 @@ import cirun.common.config;
 import cirun.common.ids;
 import cirun.common.paths;
 import cirun.common.state;
+import cirun.trigger;
 import cirun.util.persistence;
 
 enum runnerStartLine = "ci-run runner OK";
@@ -92,6 +93,34 @@ string allocateJobID()
 	return jobID;
 }
 
+void setJobStatus(string jobID, JobStatus newStatus, scope void delegate(ref JobState state) otherChanges = (ref JobState jobState) {})
+{
+	JobSpec spec;
+	getJobState(jobID).edit((ref value) {
+		value.status = newStatus;
+		otherChanges(value);
+		spec = value.spec;
+	});
+
+	TriggerEvent event;
+	final switch (newStatus)
+	{
+		case JobStatus.none     : assert(false);
+		case JobStatus.corrupted: assert(false);
+		case JobStatus.queued   : event.type = TriggerEvent.Type.queued;    break;
+		case JobStatus.starting : event.type = TriggerEvent.Type.starting;  break;
+		case JobStatus.running  : event.type = TriggerEvent.Type.running;   break;
+		case JobStatus.success  : event.type = TriggerEvent.Type.succeeded; break;
+		case JobStatus.failure  : event.type = TriggerEvent.Type.failed;    break;
+		case JobStatus.errored  : event.type = TriggerEvent.Type.errored;   break;
+		case JobStatus.cancelled: event.type = TriggerEvent.Type.cancelled; break;
+	}
+	event.job = Job(spec, jobID);
+	runTriggers(event);
+
+	// TODO: branch state transitions
+}
+
 /// Allocate a job ID and start / queue a job.
 private JobResult queueJob(ref JobSpec spec)
 {
@@ -100,11 +129,7 @@ private JobResult queueJob(ref JobSpec spec)
 	auto globalState = getGlobalState();
 	{
 		jobID = allocateJobID();
-		{
-			auto jobState = getJobState(jobID);
-			jobState.value.spec = spec;
-			jobState.value.status = JobStatus.queued;
-		}
+		setJobStatus(jobID, JobStatus.queued, (ref jobState) { jobState.spec = spec; });
 	}
 
 	auto job = Job(spec, jobID);
@@ -132,10 +157,9 @@ private JobResult startJob(string jobID)
 	JobResult result;
 	result.jobID = jobID;
 
-	getJobState(jobID).edit((ref value) {
-		value.status = JobStatus.starting;
-		value.startTime = Clock.currTime.stdTime;
-		result.state = value;
+	setJobStatus(jobID, JobStatus.starting, (ref jobState) {
+		jobState.startTime = Clock.currTime.stdTime;
+		result.state = jobState;
 	});
 
 	try

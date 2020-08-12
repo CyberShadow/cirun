@@ -34,7 +34,7 @@ import ae.utils.json;
 import ae.utils.path;
 import ae.utils.time;
 
-import cirun.ci.job : updateJobs, runnerStartLine;
+import cirun.ci.job : setJobStatus, updateJobs, runnerStartLine;
 import cirun.common.config;
 import cirun.common.paths;
 import cirun.common.state;
@@ -50,9 +50,8 @@ void runJob(string jobID)
 
 	JobSpec spec;
 
-	getJobState(jobID).edit((ref jobState) {
+	setJobStatus(jobID, JobStatus.running, (ref jobState) {
 		spec = jobState.spec;
-		jobState.status = JobStatus.running;
 	});
 
 	LogWriter!JobLogEntry logFile;
@@ -67,8 +66,7 @@ void runJob(string jobID)
 
 	void finishJob(JobStatus status, string statusText = null)
 	{
-		getJobState(jobID).edit((ref jobState) {
-			jobState.status = status;
+		setJobStatus(jobID, status, (ref jobState) {
 			jobState.statusText = statusText;
 			jobState.finishTime = Clock.currTime.stdTime;
 		});

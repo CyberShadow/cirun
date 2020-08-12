@@ -32,6 +32,8 @@ import ae.utils.funopt;
 import ae.utils.meta;
 import ae.utils.sini;
 
+import cirun.trigger : TriggerConfig;
+
 struct RepositoryConfig
 {
 	string[] cloneCommand = ["git", "clone"];
@@ -108,6 +110,8 @@ struct Config
 	Server[string] server;
 
 	OrderedMap!(string, IniFragment!string) repository;
+
+	TriggerConfig[string] trigger;
 }
 immutable Config config;
 

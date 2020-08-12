@@ -213,3 +213,28 @@
 # that repository.
 ; [repository.initech/transmogrifier]
 ; ...
+
+
+##############################################################################
+# Trigger options
+
+# Triggers are tasks that cirun will do upon certain events, such as
+# jobs changing state.
+; [trigger.example]
+
+# Sets which events cause the trigger to run.
+# Possible events are:
+# - queued    - job has been queued
+# - starting  - job is starting
+# - running   - job is started
+# - succeeded - job finished with "success" status
+# - failed    - job finished with "failure" status
+# - errored   - job finished with "errored" status
+# - cancelled - job cancelled
+# The default is [failure, errored].
+; events = [queued, starting, running, succeeded, failed, errored, cancelled]
+
+# Indicates the action to perform.
+# Supported types are:
+# Each type has its specific configuration, see below.
+; type = none
