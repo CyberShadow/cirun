@@ -27,9 +27,19 @@ import cirun.util.persistence;
 
 struct JobSpec /// Specification for a requested job.
 {
-	string repo; /// incl. namespace, if any
-	string cloneURL;
-	string commit;
+	// Necessary fields:
+	string repo;     /// Full repository name, incl. username/namespace if any
+	string cloneURL; /// Git/HTTPS/SSH URL suitable to be passed to git-clone
+	string commit;   /// Git commit SHA1
+
+	// Optional informational fields (for web UI):
+	string refName;       /// Git ref name, or other string indicating some kind of scope of linear development.
+						  /// Can be null if unknown or representing ad-hoc builds.
+	string refURL;        /// Web URL for this ref/scope (e.g. pull request page)
+	string commitMessage; /// Full message, if available.
+	string commitAuthorName;
+	string commitAuthorEmail;
+	string commitURL;     /// Web URL to this commit
 }
 
 struct Job /// Description of a specific job.
