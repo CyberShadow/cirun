@@ -221,6 +221,25 @@ uint maxParallelJobs()
 		return config.maxParallelJobs;
 }
 
+string externalUrl(string path)
+{
+	string prefix = config.externalUrlPrefix;
+	if (!prefix)
+		foreach (name, ref server; config.server)
+		{
+			import std.socket : Socket;
+			import std.conv : to;
+			prefix =
+				(server.ssl is Config.Server.SSL.init ? "http" : "https") ~
+				"://" ~
+				Socket.hostName ~
+				(server.listen.port ? ":" ~ server.listen.port.to!string : "") ~
+				"/";
+			break;
+		}
+	return prefix ? prefix ~ path : null;
+}
+
 RepositoryConfig getRepositoryConfig(string name)
 {
 	RepositoryConfig result;

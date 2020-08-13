@@ -18,8 +18,7 @@ EOF
 
 printf 'HTTP/1.0 200 OK\r\n\r\n' | ncat -v -l $test_ip $test_port > response.http &
 
-"$cirun" run --job-id-file=jobid --wait repo "$commit" --clone-url "$test_dir"/repo
-jobid=$(cat jobid)
+"$cirun" run --wait repo "$commit" --clone-url "$test_dir"/repo
 
 wait
 diff -u response.http <(
@@ -32,5 +31,5 @@ diff -u response.http <(
 	printf 'Content-Length: 107\r\n'
 	printf 'Accept-Encoding: gzip, deflate, *;q=0\r\n'
 	printf '\r\n'
-	printf '{"context":"cirun","description":"Job succeeded","state":"success","target_url":"job/%s"}' "$jobid"
+	printf '{"context":"cirun","description":"Job succeeded","state":"success"}'
 )

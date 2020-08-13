@@ -50,6 +50,7 @@ if (type == TriggerConfig.Type.giteaCommitStatus)
 
 	static struct Body
 	{
+		@JSONOptional
 		string context, description, state, target_url;
 	}
 	Body triggerBody;
@@ -69,7 +70,7 @@ if (type == TriggerConfig.Type.giteaCommitStatus)
 		case TriggerEvent.Type.createSuccess: triggerBody.state = "success"; break;
 		case TriggerEvent.Type.createFailure: triggerBody.state = "failure"; break;
 	}
-	triggerBody.target_url = .config.externalUrlPrefix ~ "job/" ~ event.job.jobID;
+	triggerBody.target_url = externalUrl("job/" ~ event.job.jobID);
 	req.data = [Data(triggerBody.toJson)];
 
 	auto res = net.httpRequest(req);
