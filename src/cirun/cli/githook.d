@@ -56,12 +56,32 @@ string genHookScript(string kind, string repositoryName)
 
 commit=$(git rev-parse HEAD)
 git_dir=$(git rev-parse --absolute-git-dir)
-exec %-(%s %) run --quiet %s "$commit" --clone-url "$git_dir"
+message=$(git log -1 --format=%%B)
+author_name=$(git log -1 --format=%%an)
+author_email=$(git log -1 --format=%%ae)
+ref=$(git rev-parse --symbolic-full-name HEAD)
+
+run() {
+	exec %-(%s %) run --quiet \
+		%s "$commit" \
+		--clone-url "$git_dir" \
+		--commit-message "$message" \
+		--commit-author-name  "$author_name"  \
+		--commit-author-email "$author_email" \
+		"$@"
+}
+
+if [ "$ref" = HEAD ] ; then
+	run
+else
+	run --ref "$ref"
+fi
 EOF"
 				.format(
 					selfCmdLine.map!escapePosixShellArgument,
 					repositoryName.escapePosixShellArgument,
 				);
+
 		case "pre-push":
 			return q"EOF
 #!/bin/sh
@@ -74,7 +94,17 @@ git_dir=$(git rev-parse --absolute-git-dir)
 while read -r local_ref local_sha1 remote_ref remote_sha1
 do
 	printf -- 'Checking cirun status for %%s (%%s)...\n' "$local_ref" "$local_sha1" 1>&2
-	job_id=$(%1$-(%s %) run --quiet --wait --job-id-file=- %2$s "$local_sha1" --clone-url "$git_dir")
+	message=$(git log -1 --format=%%B "$local_sha1")
+	author_name=$(git log -1 --format=%%an "$local_sha1")
+	author_email=$(git log -1 --format=%%ae "$local_sha1")
+	job_id=$(%1$-(%s %) run --quiet --wait \
+		--job-id-file=- \
+		%2$s "$local_sha1" \
+		--clone-url "$git_dir" \
+		--ref "$local_ref" \
+		--commit-message "$message" \
+		--commit-author-name "$author_name" \
+		--commit-author-email "$author_email")
 	status=$(%1$-(%s %) status "$job_id" --format=%%s)
 	if [ "$status" != success ]
 	then
@@ -87,6 +117,7 @@ EOF"
 					selfCmdLine.map!escapePosixShellArgument.array,
 					repositoryName.escapePosixShellArgument,
 				);
+
 		case "post-receive":
 			return q"EOF
 #!/bin/sh
@@ -98,13 +129,23 @@ unset GIT_DIR # Don't propagate to cirun jobs
 git_dir=$(git rev-parse --absolute-git-dir)
 while read -r old_sha1 new_sha1 ref
 do
-	%-(%s %) run --quiet %s "$new_sha1" --clone-url "$git_dir"
+	message=$(git log -1 --format=%%B "$new_sha1")
+	author_name=$(git log -1 --format=%%an "$new_sha1")
+	author_email=$(git log -1 --format=%%ae "$new_sha1")
+	%-(%s %) run --quiet \
+		%s "$new_sha1" \
+		--clone-url "$git_dir" \
+		--ref "$ref" \
+		--commit-message "$message" \
+		--commit-author-name "$author_name" \
+		--commit-author-email "$author_email"
 done
 EOF"
 				.format(
 					selfCmdLine.map!escapePosixShellArgument.array,
 					repositoryName.escapePosixShellArgument,
 				);
+
 		default:
 			throw new Exception("Unknown hook kind");
 	}
