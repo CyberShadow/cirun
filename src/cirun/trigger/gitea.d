@@ -57,15 +57,17 @@ if (type == TriggerConfig.Type.giteaCommitStatus)
 	triggerBody.description = "Job " ~ event.type.to!string;
 	final switch (event.type)
 	{
-		case TriggerEvent.Type.queued   : triggerBody.state = "pending"; break;
-		case TriggerEvent.Type.starting : triggerBody.state = "pending"; break;
-		case TriggerEvent.Type.running  : triggerBody.state = "pending"; break;
-		case TriggerEvent.Type.succeeded: triggerBody.state = "success"; break;
-		case TriggerEvent.Type.failed   : triggerBody.state = "failure"; break;
-		case TriggerEvent.Type.errored  : triggerBody.state = "error"; break;
-		case TriggerEvent.Type.cancelled: triggerBody.state = "error"; break;
-		case TriggerEvent.Type.broken   : triggerBody.state = "error"; break;
-		case TriggerEvent.Type.fixed    : triggerBody.state = "success"; break;
+		case TriggerEvent.Type.queued       : triggerBody.state = "pending"; break;
+		case TriggerEvent.Type.starting     : triggerBody.state = "pending"; break;
+		case TriggerEvent.Type.running      : triggerBody.state = "pending"; break;
+		case TriggerEvent.Type.succeeded    : triggerBody.state = "success"; break;
+		case TriggerEvent.Type.failed       : triggerBody.state = "failure"; break;
+		case TriggerEvent.Type.errored      : triggerBody.state = "error"; break;
+		case TriggerEvent.Type.cancelled    : triggerBody.state = "error"; break;
+		case TriggerEvent.Type.broken       : triggerBody.state = "failure"; break;
+		case TriggerEvent.Type.fixed        : triggerBody.state = "success"; break;
+		case TriggerEvent.Type.createSuccess: triggerBody.state = "success"; break;
+		case TriggerEvent.Type.createFailure: triggerBody.state = "failure"; break;
 	}
 	triggerBody.target_url = .config.externalUrlPrefix ~ "job/" ~ event.job.jobID;
 	req.data = [Data(triggerBody.toJson)];

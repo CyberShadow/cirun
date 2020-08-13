@@ -138,6 +138,18 @@ void setJobStatus(string jobID, JobStatus newStatus, scope void delegate(ref Job
 			event.type = TriggerEvent.Type.fixed;
 			runTriggers(event);
 		}
+		else
+		if (oldStatus == JobStatus.none && newStatus.among(JobStatus.success))
+		{
+			event.type = TriggerEvent.Type.createSuccess;
+			runTriggers(event);
+		}
+		else
+		if (oldStatus == JobStatus.none && newStatus.among(JobStatus.failure, JobStatus.errored))
+		{
+			event.type = TriggerEvent.Type.createFailure;
+			runTriggers(event);
+		}
 	}
 }
 

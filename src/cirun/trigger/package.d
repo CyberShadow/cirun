@@ -40,6 +40,9 @@ struct TriggerEvent
 		// Job status changes
 		broken,
 		fixed,
+		// Initial job results on branch
+		createSuccess,
+		createFailure,
 	}
 
 	Type type;
@@ -51,6 +54,7 @@ struct TriggerConfig
 		TriggerEvent.Type.failed,
 		TriggerEvent.Type.errored,
 		TriggerEvent.Type.fixed,
+		TriggerEvent.Type.createSuccess,
 	];
 
 	enum Type

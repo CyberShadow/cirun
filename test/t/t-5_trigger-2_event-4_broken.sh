@@ -1,7 +1,7 @@
 #!/bin/bash
 source ./lib.bash
 
-# Test the "broken" trigger event.
+# Test the "createSuccess" and "broken" trigger event.
 
 git init -q "$test_dir"/repo
 printf '#!/bin/sh\n\n\ntrue\n' > "$test_dir"/repo/.cirun
@@ -16,7 +16,7 @@ commit2=$(git -C "$test_dir"/repo rev-parse HEAD)
 cat >> cirun.conf <<EOF
 [trigger.test]
 type = exec
-events = [queued, starting, running, succeeded, failed, errored, cancelled, broken, fixed]
+events = [queued, starting, running, succeeded, failed, errored, cancelled, broken, fixed, createSuccess, createFailure]
 exec.command = ["$PWD/trigger.sh"]
 EOF
 
@@ -34,6 +34,7 @@ queued
 starting
 running
 succeeded
+createSuccess
 queued
 starting
 running
