@@ -13,14 +13,17 @@
 
 module cirun.web.webhook;
 
+import std.conv;
 import std.digest.hmac;
 import std.digest.sha;
 import std.exception;
 import std.json;
+import std.string;
 
 import ae.net.http.common;
 import ae.net.ietf.url;
 import ae.sys.dataset;
+import ae.utils.array;
 import ae.utils.text;
 
 import cirun.common.config;
@@ -77,9 +80,14 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 					if (json["after"].str == "0000000000000000000000000000000000000000")
 						return null; // ping
 					JobSpec spec;
-					spec.repo     = json["repository"]["full_name"].str;
-					spec.cloneURL = json["repository"]["clone_url"].str;
-					spec.commit   = json["after"].str;
+					spec.repo              = json["repository"]["full_name"].str;
+					spec.cloneURL          = json["repository"]["clone_url"].str;
+					spec.commit            = json["after"].str;
+					spec.refName           = json["ref"].str;
+					spec.commitMessage     = json["commits"][0]["message"].str;
+					spec.commitAuthorName  = json["commits"][0]["author"]["name"].str;
+					spec.commitAuthorEmail = json["commits"][0]["author"]["email"].str;
+					spec.commitURL         = json["commits"][0]["url"].str;
 					return [spec];
 				}
 				case "pull_request":
@@ -92,6 +100,8 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 							spec.repo     = json["pull_request"]["base"]["repo"]["full_name"].str;
 							spec.cloneURL = json["pull_request"]["head"]["repo"]["clone_url"].str;
 							spec.commit   = json["pull_request"]["head"]["sha"].str;
+							spec.refName  = "pr:" ~ json["pull_request"]["number"].integer.to!string;
+							spec.refURL   = json["pull_request"]["html_url"].str;
 							return [spec];
 						}
 						default:
@@ -121,9 +131,14 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 				case "push":
 				{
 					JobSpec spec;
-					spec.repo     = json["repository"]["full_name"].str;
-					spec.cloneURL = json["repository"]["clone_url"].str;
-					spec.commit   = json["after"].str;
+					spec.repo              = json["repository"]["full_name"].str;
+					spec.cloneURL          = json["repository"]["clone_url"].str;
+					spec.commit            = json["after"].str;
+					spec.refName           = json["ref"].str;
+					spec.commitMessage     = json["commits"][0]["message"].str;
+					spec.commitAuthorName  = json["commits"][0]["author"]["name"].str;
+					spec.commitAuthorEmail = json["commits"][0]["author"]["email"].str;
+					spec.commitURL         = json["commits"][0]["url"].str;
 					return [spec];
 				}
 				case "pull_request":
@@ -135,6 +150,8 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 							spec.repo     = json["pull_request"]["base"]["repo"]["full_name"].str;
 							spec.cloneURL = json["pull_request"]["head"]["repo"]["clone_url"].str;
 							spec.commit   = json["pull_request"]["head"]["sha"].str;
+							spec.refName  = "pr:" ~ json["pull_request"]["number"].integer.to!string;
+							spec.refURL   = json["pull_request"]["html_url"].str;
 							return [spec];
 						default:
 							return null;
@@ -154,9 +171,14 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 				case "Push Hook":
 				{
 					JobSpec spec;
-					spec.repo     = json["project"]["path_with_namespace"].str;
-					spec.cloneURL = json["project"]["url"].str;
-					spec.commit   = json["after"].str;
+					spec.repo              = json["project"]["path_with_namespace"].str;
+					spec.cloneURL          = json["project"]["url"].str;
+					spec.commit            = json["after"].str;
+					spec.refName           = json["ref"].str;
+					spec.commitMessage     = json["commits"][0]["message"].str;
+					spec.commitAuthorName  = json["commits"][0]["author"]["name"].str;
+					spec.commitAuthorEmail = json["commits"][0]["author"]["email"].str;
+					spec.commitURL         = json["commits"][0]["url"].str;
 					return [spec];
 				}
 				case "Merge Request Hook":
@@ -166,9 +188,15 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 						case "update":
 						{
 							JobSpec spec;
-							spec.repo     = json["object_attributes"]["target"]["path_with_namespace"].str;
-							spec.cloneURL = json["object_attributes"]["source"]["ssh_url"].str;
-							spec.commit   = json["object_attributes"]["last_commit"]["id"].str;
+							spec.repo              = json["object_attributes"]["target"]["path_with_namespace"].str;
+							spec.cloneURL          = json["object_attributes"]["source"]["ssh_url"].str;
+							spec.commit            = json["object_attributes"]["last_commit"]["id"].str;
+							spec.refName           = "pr:" ~ json["object_attributes"]["iid"].integer.to!string;
+							spec.refURL            = json["object_attributes"]["url"].str;
+							spec.commitMessage     = json["object_attributes"]["last_commit"]["message"].str;
+							spec.commitAuthorName  = json["object_attributes"]["last_commit"]["author"]["name"].str;
+							spec.commitAuthorEmail = json["object_attributes"]["last_commit"]["author"]["email"].str;
+							spec.commitURL         = json["object_attributes"]["last_commit"]["url"].str;
 							return [spec];
 						}
 						default:
@@ -194,6 +222,10 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 					// it requires a (possibly authenticated) API call.
 					spec.cloneURL = json["repository"]["links"]["html"]["href"].str;
 					spec.commit   = json["push"]["changes"][0]["new"]["target"]["hash"].str; // WTF!
+					spec.refName  = "refs/heads/" ~ json["push"]["changes"][0]["new"]["name"].str;
+					spec.refURL   = json["push"]["changes"][0]["new"]["links"]["html"]["href"].str;
+					list(spec.commitAuthorName, spec.commitAuthorEmail) = json["push"]["changes"][0]["new"]["target"]["author"]["raw"].str.parseBitbucketAuthor;
+					spec.commitURL = json["push"]["changes"][0]["new"]["target"]["links"]["html"]["href"].str;
 					return [spec];
 				}
 				// TODO: Pull requests
@@ -202,4 +234,13 @@ JobSpec[] parseWebhook(in ref Config.Server.WebHook webhookConfig, HttpRequest r
 			}
 		}
 	}
+}
+
+private:
+
+string[2] parseBitbucketAuthor(string author)
+{
+	auto p = author.lastIndexOf(" <");
+	enforce(p >= 0 && author.endsWith(">"), "Bad author: " ~ author);
+	return [author[0 .. p], author[p + 2 .. $ - 1]];
 }
