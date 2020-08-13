@@ -67,6 +67,9 @@ string getRepoDir(Root root, string repo)
 alias getRepoHistoryPath = (string repo) =>
 	getRepoDir(Root.data, repo).buildPath("history.json");
 
+alias getRepoStatePath = (string repo) =>
+	getRepoDir(Root.data, repo).buildPath("repo.json");
+
 string getCommitDir(Root root, string repo, string commit)
 {
 	enforce(commit.isCommitID(), "Invalid commit SHA-1");

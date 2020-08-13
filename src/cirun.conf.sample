@@ -231,8 +231,10 @@
 # - failed    - job finished with "failure" status
 # - errored   - job finished with "errored" status
 # - cancelled - job cancelled
-# The default is [failure, errored].
-; events = [queued, starting, running, succeeded, failed, errored, cancelled]
+# - broken - job failed/errored, but the previous job on this branch succeeded (the build was broken)
+# - fixed  - job succeeded, but the previous job on this branch failed/errored (the build was fixed)
+# The default is [failure, errored, fixed].
+; events = [queued, starting, running, succeeded, failed, errored, cancelled, broken, fixed]
 
 # Indicates the action to perform.
 # Supported types are:

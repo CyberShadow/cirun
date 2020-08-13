@@ -64,6 +64,8 @@ if (type == TriggerConfig.Type.giteaCommitStatus)
 		case TriggerEvent.Type.failed   : triggerBody.state = "failure"; break;
 		case TriggerEvent.Type.errored  : triggerBody.state = "error"; break;
 		case TriggerEvent.Type.cancelled: triggerBody.state = "error"; break;
+		case TriggerEvent.Type.broken   : triggerBody.state = "error"; break;
+		case TriggerEvent.Type.fixed    : triggerBody.state = "success"; break;
 	}
 	triggerBody.target_url = .config.externalUrlPrefix ~ "job/" ~ event.job.jobID;
 	req.data = [Data(triggerBody.toJson)];

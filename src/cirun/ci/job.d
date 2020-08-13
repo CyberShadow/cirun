@@ -118,7 +118,27 @@ void setJobStatus(string jobID, JobStatus newStatus, scope void delegate(ref Job
 	event.job = Job(spec, jobID);
 	runTriggers(event);
 
-	// TODO: branch state transitions
+	if (spec.refName && newStatus.among(JobStatus.success, JobStatus.failure, JobStatus.errored))
+	{
+		JobStatus oldStatus;
+		{
+			auto repoState = getRepoState(spec.repo);
+			oldStatus = repoState.value.previousRefState.get(spec.refName, JobStatus.none);
+			repoState.value.previousRefState[spec.refName] = newStatus;
+		}
+
+		if (oldStatus.among(JobStatus.success) && newStatus.among(JobStatus.failure, JobStatus.errored))
+		{
+			event.type = TriggerEvent.Type.broken;
+			runTriggers(event);
+		}
+		else
+		if (oldStatus.among(JobStatus.failure, JobStatus.errored) && newStatus.among(JobStatus.success))
+		{
+			event.type = TriggerEvent.Type.fixed;
+			runTriggers(event);
+		}
+	}
 }
 
 /// Allocate a job ID and start / queue a job.

@@ -73,6 +73,16 @@ auto getGlobalHistoryReader() { return LogReader!HistoryEntry(getGlobalHistoryPa
 auto getRepoHistoryWriter(string repo) { return LogWriter!HistoryEntry(getRepoHistoryPath(repo)); } /// ditto
 auto getRepoHistoryReader(string repo) { return LogReader!HistoryEntry(getRepoHistoryPath(repo)); } /// ditto
 
+struct RepoState /// Persistent per-repo state
+{
+	JobStatus[string] previousRefState; /// For triggers
+}
+
+auto getRepoState(string repoID) /// ditto
+{
+	return Persistent!RepoState(getRepoStatePath(repoID));
+}
+
 // Commit
 
 auto getCommitHistoryWriter(string repo, string commit) { return LogWriter!HistoryEntry(getCommitHistoryPath(repo, commit)); } /// ditto

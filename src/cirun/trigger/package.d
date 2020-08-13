@@ -29,6 +29,7 @@ struct TriggerEvent
 
 	enum Type
 	{
+		// These map to job statuses
 		queued,
 		starting,
 		running,
@@ -36,6 +37,9 @@ struct TriggerEvent
 		failed,
 		errored,
 		cancelled,
+		// Job status changes
+		broken,
+		fixed,
 	}
 
 	Type type;
@@ -46,6 +50,7 @@ struct TriggerConfig
 	TriggerEvent.Type[] events = [
 		TriggerEvent.Type.failed,
 		TriggerEvent.Type.errored,
+		TriggerEvent.Type.fixed,
 	];
 
 	enum Type
