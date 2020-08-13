@@ -163,7 +163,7 @@ If a repository / commit is specified, show the job history for that object.`)
 
 	@(`Install a git hook in the given repository which invokes cirun in response to specific actions.`)
 	void installGitHook(
-		Parameter!(string, "The kind of hook to install (post-commit, pre-push, or post-receive).") kind,
+		Parameter!(string, "The kind of hook to install (post-commit, pre-push, post-receive, or update).") kind,
 		Parameter!(string, "The path to the repository where the hook will be installed.\nDefaults to the current directory.") repositoryPath = ".",
 		Parameter!(string, "The name of the repository to use.\nDefaults to the repository's directory name.") repositoryName = null,
 	)
