@@ -58,6 +58,12 @@ If a job for the given commit already exists, show information about that job in
 		string repository,
 		string commit,
 		Option!(string, "Git URL to clone the repository from", "URL") cloneURL,
+		Option!(string, "Git ref (pointing to the commit), if any", "NAME", 0, "ref") refName = null,
+		Option!(string, "Git ref URL (used in web interface)", "URL") refURL = null,
+		Option!(string, "Commit message of the specified commit (shown in web interface)", "MESSAGE") commitMessage = null,
+		Option!(string, "Commit author name (shown in web interface)", "NAME") commitAuthorName = null,
+		Option!(string, "Commit author email (used in web interface)", "EMAIL") commitAuthorEmail = null,
+		Option!(string, "Commit URL (used in web interface)", "AUTHOR") commitURL = null,
 		Switch!"Wait until this job has finished." wait = false,
 		Switch!"Do not print the job status." quiet = false,
 		Option!(string, "Write job ID to the given file.", "PATH") jobIDFile = null,
@@ -68,6 +74,13 @@ If a job for the given commit already exists, show information about that job in
 		spec.repo = repository;
 		spec.commit = commit;
 		spec.cloneURL = cloneURL;
+		spec.refName = refName;
+		spec.refURL = refURL;
+		spec.commitMessage = commitMessage;
+		spec.commitAuthorName = commitAuthorName;
+		spec.commitAuthorEmail = commitAuthorEmail;
+		spec.commitURL = commitURL;
+
 		auto result = needJob(spec, retest, wait);
 		if (!quiet)
 			term.printJobResult(result);
