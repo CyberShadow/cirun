@@ -29,7 +29,7 @@ import std.traits;
 
 import ae.sys.term : Term;
 import ae.utils.exception;
-import ae.utils.text : formatted;
+import ae.utils.text : formatted, splitAsciiLines;
 import ae.utils.time : StdTime;
 import ae.utils.time.format;
 
@@ -152,7 +152,18 @@ void printJobResult(Term t, ref JobResult result)
 	if (result.state.spec.repo)
 		t.put("  Repository: ", result.state.spec.repo, "\n");
 	if (result.state.spec.commit)
-		t.put("      Commit: ", result.state.spec.commit, "\n");
+	{
+		t.put("      Commit: ", result.state.spec.commit);
+		if (result.state.spec.commitMessage)
+		{
+			auto m = result.state.spec.commitMessage.splitAsciiLines[0];
+			if (m.length > 40)
+				m = m[0..37] ~ "...";
+			t.put(" (\"", m, "\")\n");
+		}
+	}
+	if (result.state.spec.refName.startsWith("refs/heads/"))
+		t.put("      Branch: ", result.state.spec.refName["refs/heads/".length .. $], "\n");
 	if (result.state.startTime)
 		t.put("  Start time: ", result.state.startTime.SysTime.formatTime!timeFormat, "\n");
 	if (result.state.finishTime)
