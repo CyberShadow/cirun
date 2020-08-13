@@ -33,7 +33,7 @@ import cirun.web.webhook;
 
 void handleRequest(
 	HttpRequest request,
-	immutable ref Config.Server serverConfig,
+	in ref Config.Server serverConfig,
 	void delegate(HttpResponse) handleResponse,
 	ref Logger log,
 )

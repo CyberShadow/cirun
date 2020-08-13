@@ -107,7 +107,7 @@ struct Config
 		}
 		WebHook[string] webhook;
 	}
-	Server[string] server;
+	OrderedMap!(string, Server) server;
 
 	OrderedMap!(string, IniFragment!string) repository;
 

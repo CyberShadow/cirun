@@ -62,7 +62,7 @@ void startServers()
 {
 	enforce(config.server.length, "No servers are configured.");
 
-	foreach (name, serverConfig; config.server)
+	foreach (name, ref serverConfig; config.server)
 		startServer(name, serverConfig, false);
 
 	enforce(socketManager.size(), "No servers to start!");
@@ -123,7 +123,7 @@ void runImplicitServer(
 }
 
 
-void startServer(string name, immutable Config.Server serverConfig, bool exclusive)
+void startServer(string name, in ref Config.Server serverConfig, bool exclusive)
 {
 	scope(failure) stderr.writefln("Error with server %s:", name);
 
