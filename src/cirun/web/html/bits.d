@@ -13,6 +13,7 @@
 
 module cirun.web.html.bits;
 
+import std.algorithm.searching;
 import std.array;
 import std.conv : text;
 import std.datetime.systime : SysTime;
@@ -52,10 +53,22 @@ void putCommitID(HTMLTerm t, JobSpec spec)
 		if (spec.commit)
 		{
 			assert(spec.commit.isCommitID);
-			// TODO: commit description
-			t.tag(`a`, ["href" : t.context.relPath(["commit"] ~ spec.repo.split("/") ~ [spec.commit, ""])], {
+			auto attrs = ["href" : t.context.relPath(["commit"] ~ spec.repo.split("/") ~ [spec.commit, ""])];
+			if (spec.commitMessage)
+			{
+				auto commitMessage = spec.commitMessage;
+				if (commitMessage.length > 256)
+					commitMessage = commitMessage[0 .. 250] ~ "\&hellip;"; // ";
+				attrs["title"] = commitMessage;
+			}
+			t.tag(`a`, attrs, {
 				t.put(spec.commit);
 			});
+			if (spec.commitURL)
+			{
+				t.put("\&nbsp;"); // ";
+				t.putExternalLink(spec.commitURL);
+			}
 		}
 		else
 			t.put("-");
@@ -127,5 +140,44 @@ void putDuration(HTMLTerm t, StdTime startTime, StdTime finishTime)
 		}
 		else
 			t.put('-');
+	});
+}
+
+void putRef(HTMLTerm t, string refName)
+{
+	auto icon =
+		refName.startsWith("pr:") ? "pull-request" :
+		refName.startsWith("refs/tags/") ? "tag" :
+		"branch";
+	t.tag(`div`, ["class" : icon], {
+		t.tag(`div`, ["class" : "icon"], {});
+		if (refName.skipOver("pr:"))
+			t.put("#", refName);
+		else
+		if (refName.skipOver("refs/tags/") || refName.skipOver("refs/heads/") || refName !is null)
+			t.put(refName);
+		else
+			t.put('-');
+	});
+}
+
+void putAuthor(HTMLTerm t, string name, string email)
+{
+	t.tag(`div`, ["class" : "author"], {
+		t.tag(`div`, ["class" : "icon"], {});
+		if (name)
+			t.put(name);
+		else
+		if (email)
+			t.put(email);
+		else
+			t.put('-');
+	});
+}
+
+void putExternalLink(HTMLTerm t, string url)
+{
+	t.tag(`a`, ["class" : "external-link", "href" : url], {
+		t.tag(`div`, ["class" : "icon"], {});
 	});
 }

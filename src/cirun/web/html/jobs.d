@@ -13,6 +13,7 @@
 
 module cirun.web.html.jobs;
 
+import std.algorithm.searching;
 import std.conv : text;
 import std.range;
 
@@ -118,6 +119,31 @@ void putJobDetails(HTMLTerm t, JobResult result)
 				});
 				t.tag(`td`, {
 					t.putCommitID(result.state.spec);
+				});
+			});
+			t.tag(`tr`, {
+				t.tag(`td`, {
+					t.put(`Author:`);
+				});
+				t.tag(`td`, {
+					t.putAuthor(result.state.spec.commitAuthorName, result.state.spec.commitAuthorEmail);
+				});
+			});
+			t.tag(`tr`, {
+				t.tag(`td`, {
+					t.put(
+						result.state.spec.refName.startsWith("pr:") ? "Pull request:" :
+						result.state.spec.refName.startsWith("refs/tags/") ? "Tag:" :
+						`Branch:`
+					);
+				});
+				t.tag(`td`, {
+					t.putRef(result.state.spec.refName);
+					if (result.state.spec.refURL)
+					{
+						t.put("\&nbsp;"); // ";
+						t.putExternalLink(result.state.spec.refURL);
+					}
 				});
 			});
 			t.tag(`tr`, {

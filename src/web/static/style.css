@@ -61,6 +61,11 @@ h1 > div {
 .job               > .icon { background-position: -48px -32px; }
 .date              > .icon { background-position:   0   -48px; }
 .duration          > .icon { background-position: -16px -48px; }
+.branch            > .icon { background-position: -32px -48px; }
+.tag               > .icon { background-position: -48px -48px; }
+.pull-request      > .icon { background-position:   0   -64px; }
+.author            > .icon { background-position: -16px -64px; }
+.external-link     > .icon { background-position: -32px -64px; }
 
 .job-box {
 	border-width: 1px 1px 1px 10px;
